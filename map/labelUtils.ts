@@ -26,7 +26,9 @@ export const createLabelMesh = (
     rotation: number, 
     terrainHeight: number, 
     color: string, 
-    area: number
+    area: number,
+    isVertical: boolean = false,
+    constrainedScale: number = 1.0
 ) => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d')!;
@@ -35,27 +37,40 @@ export const createLabelMesh = (
     ctx.font = `900 ${baseFontSize}px "Cinzel", serif`;
     
     const textWidth = ctx.measureText(text).width;
-    canvas.width = textWidth + 120;
-    canvas.height = baseFontSize + 120;
+
+    if (isVertical) {
+        canvas.width = baseFontSize + 120;
+        canvas.height = textWidth + 120;
+    } else {
+        canvas.width = textWidth + 120;
+        canvas.height = baseFontSize + 120;
+    }
 
     ctx.font = `900 ${baseFontSize}px "Cinzel", serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    if (isVertical) {
+        ctx.rotate(Math.PI / 2);
+    }
+
     ctx.lineJoin = 'round';
     ctx.strokeStyle = 'rgba(0,0,0,1)';
     ctx.lineWidth = 18;
-    ctx.strokeText(text, canvas.width / 2, canvas.height / 2);
+    ctx.strokeText(text, 0, 0);
     
     ctx.fillStyle = '#ffffff'; 
-    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+    ctx.fillText(text, 0, 0);
+    ctx.restore();
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.anisotropy = 8;
     
     const areaScale = Math.sqrt(area) * 0.015; 
     const levelBase = level === 'Empire' ? 4.0 : level === 'Kingdom' ? 2.5 : level === 'Duchy' ? 1.5 : level === 'County' ? 0.8 : 0.6;
-    const finalBaseScale = levelBase * areaScale;
+    const finalBaseScale = levelBase * areaScale * constrainedScale;
 
     const planeGeo = new THREE.PlaneGeometry(canvas.width * 0.05, canvas.height * 0.05);
     const planeMat = new THREE.MeshBasicMaterial({ 

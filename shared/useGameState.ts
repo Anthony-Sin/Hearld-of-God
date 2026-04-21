@@ -22,8 +22,6 @@ export function useGameState() {
     closeModal,
     advanceDate,
     heraldInfo,
-    divineBalance,
-    traits: uiTraits,
     notifications,
     addNotification
   } = useUIState();
@@ -196,7 +194,6 @@ export function useGameState() {
     activeModal,
     openModal,
     closeModal,
-    uiTraits,
     makeDecision,
     heraldInfo,
     heraldStats,
@@ -204,7 +201,6 @@ export function useGameState() {
     traits,
     unlockedSkills,
     abilityCooldowns,
-    divineBalance,
     notifications,
     blessProvince,
     investigate,

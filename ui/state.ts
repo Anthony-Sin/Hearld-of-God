@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { ActiveModal, DivineBalance, HeraldInfo, RulerTrait } from '../shared/types';
+import { ActiveModal, HeraldInfo } from '../shared/types';
 
 export interface Notification {
   id: string;
@@ -14,22 +14,11 @@ export function useUIState() {
   const [currentDate, setCurrentDate] = useState(new Date(1066, 0, 1));
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
 
-  // Herald & Divine UI specific info (Can be moved to ruler state if needed)
+  // Herald & Divine UI specific info
   const [heraldInfo, setHeraldInfo] = useState<HeraldInfo>({
     name: 'Heralda the Radiant',
     title: 'Herald of the Silver Flame'
   });
-
-  const [divineBalance] = useState<DivineBalance>({
-    divinity: 40,
-    corruption: 10
-  });
-
-  const [traits] = useState<RulerTrait[]>([
-    { id: 'ambitious', name: 'Ambitious', description: 'Always seeking more power.', effects: { prestige: 0.1 }, lucideIcon: 'Zap' },
-    { id: 'pure', name: 'Divine Vessel', description: 'A conduit for the holy light.', effects: { piety: 0.2 }, lucideIcon: 'Sparkles' },
-    { id: 'just', name: 'Just', description: 'Fair and equitable in all things.', effects: { renown: 0.05 }, lucideIcon: 'Scale' }
-  ]);
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
@@ -87,8 +76,6 @@ export function useUIState() {
     closeModal,
     advanceDate,
     heraldInfo,
-    divineBalance,
-    traits,
     notifications,
     addNotification
   };

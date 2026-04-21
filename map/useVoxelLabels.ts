@@ -23,23 +23,83 @@ export function useVoxelLabels(scene: THREE.Scene | null, mapData: MapData, view
         const group = new THREE.Group();
         labelGroupRef.current = group;
 
+        // Helper to find the best placement for an entity (centroid of land voxels and max height)
+        const getEntityPlacement = (id: number, level: ViewLevel) => {
+            const memberBaronies = mapData.baronies.filter(b => {
+                if (level === 'Empire') return b.empireId === id;
+                if (level === 'Kingdom') return b.kingdomId === id;
+                if (level === 'Duchy') return b.duchyId === id;
+                if (level === 'County') return b.id === id; // Wait, HierarchyEntity counties vs BaronyData
+                return false;
+            });
+
+            // Special case for County as it might be HierarchyEntity or Barony
+            let targetBaronies = memberBaronies;
+            if (level === 'County' && mapData.counties[id]) {
+                 targetBaronies = mapData.baronies.filter(b => b.countyId === id);
+            }
+
+            if (targetBaronies.length === 0) return null;
+
+            let sumX = 0, sumZ = 0, count = 0;
+            let maxHeight = 0;
+            let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+
+            targetBaronies.forEach(b => {
+                // Approximate land area using barony seed as proxy, or scan voxels for accuracy
+                // For performance, let's use the barony seeds that are already on land
+                sumX += b.x;
+                sumZ += b.z;
+                count++;
+
+                // Scan voxels of this barony to find max height and land bounds
+                // Optimization: scan every Nth voxel if too many
+                const baronyVoxels = mapData.voxels.filter(v => v.provinceId === b.id);
+                baronyVoxels.forEach(v => {
+                    if (v.type !== 'water' && v.type !== 'deep_water') {
+                        maxHeight = Math.max(maxHeight, v.height);
+                        minX = Math.min(minX, v.x);
+                        maxX = Math.max(maxX, v.x);
+                        minZ = Math.min(minZ, v.z);
+                        maxZ = Math.max(maxZ, v.z);
+                    }
+                });
+            });
+
+            if (count === 0 || minX === Infinity) return null;
+
+            const centerX = sumX / count;
+            const centerZ = sumZ / count;
+
+            const width = maxX - minX;
+            const depth = maxZ - minZ;
+
+            return { x: centerX, z: centerZ, maxHeight, width, depth };
+        };
+
         // Add labels for all levels, we'll toggle visibility
         const addTier = (entities: any[], level: ViewLevel) => {
             entities.forEach(e => {
-                const ix = Math.min(mapData.width - 1, Math.max(0, Math.round(e.x)));
-                const iz = Math.min(mapData.depth - 1, Math.max(0, Math.round(e.z)));
-                const voxel = mapData.voxels[iz * mapData.width + ix];
+                const placement = getEntityPlacement(e.id, level);
+                if (!placement) return;
 
+                // Check if we should rotate vertically
+                // If the landmass is much taller than wide
+                const isVertical = placement.depth > placement.width * 1.5;
+
+                // Constrain scale if it's too big for the landmass
+                // createLabelMesh uses area for base scale, let's refine
                 const mesh = createLabelMesh(
                     e.name,
                     level,
                     e.id,
-                    e.x,
-                    e.z,
+                    placement.x,
+                    placement.z,
                     e.rotation || 0,
-                    voxel?.height || 1,
+                    placement.maxHeight,
                     '#ffffff',
-                    e.area || 100
+                    e.area || 100,
+                    isVertical
                 );
                 group.add(mesh);
             });

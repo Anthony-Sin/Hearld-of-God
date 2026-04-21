@@ -5,7 +5,7 @@ import * as LucideIcons from 'lucide-react';
 import VoxelCharacter from '@ruler/VoxelCharacter';
 import { BaronyData } from '@map/types';
 import { motion } from 'motion/react';
-import { HeraldStats, Trait, DivineBalance, HeraldInfo } from '../shared/types';
+import { HeraldStats, Trait, HeraldInfo } from '../shared/types';
 import { HERALD_SKILL_TREE, HERALD_ABILITIES } from '../ruler/skills';
 
 interface PortraitHUDProps {
@@ -13,7 +13,6 @@ interface PortraitHUDProps {
   heraldInfo: HeraldInfo;
   heraldStats: HeraldStats;
   traits: Trait[];
-  divineBalance: DivineBalance;
   onAction?: (action: any) => void;
   SYMBOL_ICONS: Record<string, any>;
   unlockedSkills: string[];
@@ -28,7 +27,6 @@ export default function PortraitHUD({
   heraldStats: computedHeraldStats,
   traits,
   heraldInfo,
-  divineBalance,
   unlockedSkills,
   abilityCooldowns,
   castAbility

@@ -1,10 +1,9 @@
 import { Coins, Star, Hash, Trophy, Settings, Users, Database, Sparkles, Skull, Flame, Heart } from 'lucide-react';
 import { motion } from 'motion/react';
-import { GameResources, DivineBalance, HeraldInfo, HeraldStats } from '../shared/types';
+import { GameResources, HeraldInfo, HeraldStats } from '../shared/types';
 
 interface TopBarProps {
   resources: GameResources;
-  divineBalance: DivineBalance;
   heraldInfo: HeraldInfo;
   currentDate: Date;
   voxelCount: number;
@@ -15,7 +14,6 @@ interface TopBarProps {
 
 export default function TopBar({
   resources,
-  divineBalance,
   heraldInfo,
   currentDate,
   voxelCount,

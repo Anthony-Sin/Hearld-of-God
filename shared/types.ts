@@ -49,11 +49,6 @@ export interface RulerTrait {
   lucideIcon: string;
 }
 
-export interface DivineBalance {
-  divinity: number;
-  corruption: number;
-}
-
 export interface HeraldInfo {
   name: string;
   title: string;
@@ -80,9 +75,7 @@ export interface SharedState {
   mapData: MapData;
   selectedProvince: BaronyData | null;
   activeModal: ActiveModal;
-  divineBalance: DivineBalance;
   heraldInfo: HeraldInfo;
-  uiTraits: RulerTrait[];
   unlockedSkills: string[];
   abilityCooldowns: Record<string, number>;
 }

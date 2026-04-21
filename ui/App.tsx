@@ -46,8 +46,6 @@ export default function App() {
     openModal,
     closeModal,
     heraldInfo,
-    divineBalance,
-    uiTraits,
     notifications,
     blessProvince,
     investigate,
@@ -94,7 +92,6 @@ export default function App() {
             {/* Top Bar Resources (Full Width Fixed) */}
             <TopBar
               resources={playerResources}
-              divineBalance={divineBalance}
               heraldInfo={heraldInfo}
               currentDate={currentDate}
               voxelCount={mapData.voxels.length}
@@ -121,7 +118,6 @@ export default function App() {
               heraldInfo={heraldInfo}
               heraldStats={computedHeraldStats}
               traits={traits}
-              divineBalance={divineBalance}
               onAction={openModal}
               SYMBOL_ICONS={SYMBOL_ICONS}
               unlockedSkills={unlockedSkills}
