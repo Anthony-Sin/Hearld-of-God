@@ -1,40 +1,113 @@
-import { Coins, Star, Hash, Trophy, Users } from 'lucide-react';
-import { GameResources } from '../../hooks/useGameState';
+import { Coins, Star, Hash, Trophy, Settings, Users, Database } from 'lucide-react';
+import { motion } from 'motion/react';
+import { GameResources, DivineBalance, HeraldInfo } from '../shared/types';
 
 interface TopBarProps {
   resources: GameResources;
-  selectedProvinceName?: string;
+  divineBalance: DivineBalance;
+  heraldInfo: HeraldInfo;
+  currentDate: Date;
+  voxelCount: number;
+  domainScope: number;
+  onSettingsClick: () => void;
 }
 
-export default function TopBar({ resources }: TopBarProps) {
+export default function TopBar({
+  resources,
+  divineBalance,
+  heraldInfo,
+  currentDate,
+  voxelCount,
+  domainScope,
+  onSettingsClick
+}: TopBarProps) {
+
+  const formatDate = (date: Date) => {
+    const d = new Date(date);
+    const day = d.getDate();
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    return `${day} ${month} ${year} AD`;
+  };
+
+  const resourceItem = (icon: any, label: string, value: number, delta: number | undefined, color: string) => (
+    <div className="flex items-center gap-2 px-3 border-r border-amber-900/20 last:border-r-0 group cursor-help" title={label}>
+      <div className={`${color}`}>{icon}</div>
+      <div className="flex flex-col">
+        <span className="text-xs font-bold text-stone-200 leading-none">{Math.floor(value)}</span>
+        {delta !== undefined && (
+          <span className={`text-[9px] font-medium ${delta >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+            {delta >= 0 ? '+' : ''}{delta.toFixed(1)}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+
+  const divinityPercent = (divineBalance.divinity / (divineBalance.divinity + divineBalance.corruption)) * 100;
+  const isCorrupted = divineBalance.corruption > divineBalance.divinity;
+  const isHoly = divineBalance.divinity > 80;
+
   return (
-    <div className="h-10 bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-center gap-6 px-6 pointer-events-auto shadow-2xl rounded-sm">
-      <div className="flex items-center gap-2 group cursor-help" title="Gold">
-        <Coins size={14} className="text-amber-400" />
-        <span className="text-[11px] font-bold text-white/90">{resources.gold}</span>
-        <span className="text-[9px] text-emerald-400 opacity-60">+2.4</span>
-      </div>
-      <div className="flex items-center gap-2 group cursor-help" title="Prestige">
-        <Star size={14} className="text-sky-400" />
-        <span className="text-[11px] font-bold text-white/90">{resources.prestige}</span>
-        <span className="text-[9px] text-emerald-400 opacity-60">+4.1</span>
-      </div>
-      <div className="flex items-center gap-2 group cursor-help" title="Piety">
-        <Hash size={14} className="text-white/60" />
-        <span className="text-[11px] font-bold text-white/90">{resources.piety}</span>
-        <span className="text-[9px] text-emerald-400 opacity-60">+1.2</span>
-      </div>
-      <div className="flex items-center gap-2 group cursor-help" title="Renown">
-        <Trophy size={14} className="text-rose-400" />
-        <span className="text-[11px] font-bold text-white/90">{resources.renown}</span>
-        <span className="text-[9px] text-emerald-400 opacity-60">+0.8</span>
-      </div>
-      <div className="h-4 w-[1px] bg-white/10 mx-2" />
-      <div className="flex items-center gap-2 group cursor-help" title="Army">
-        <Users size={14} className="text-white/40" />
-        <span className="text-[11px] font-bold text-white/90">1.2K</span>
+    <motion.div
+      initial={{ y: -50, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      className="fixed top-0 left-0 right-0 h-12 bg-stone-900/95 border-b-2 border-amber-900/40 flex items-center justify-between px-6 z-60 shadow-2xl backdrop-blur-sm pointer-events-auto"
+    >
+      {/* Left Cluster: Resources */}
+      <div className="flex items-center h-full">
+        {resourceItem(<Coins size={16} />, "Gold", resources.gold, resources.goldDelta, "text-amber-400")}
+        {resourceItem(<Hash size={16} />, "Piety", resources.piety, resources.pietyDelta, "text-stone-300")}
+        {resourceItem(<Trophy size={16} />, "Renown", resources.renown, resources.renownDelta, "text-rose-400")}
+        {resourceItem(<Star size={16} />, "Prestige", resources.prestige, resources.prestigeDelta, "text-sky-400")}
       </div>
 
-    </div>
+      {/* Center: Divine Balance */}
+      <div className="flex flex-col items-center justify-center w-1/3 px-8">
+        <span className="gothic-font text-[9px] tracking-[0.3em] text-amber-500/60 uppercase mb-1">The Divine Balance</span>
+        <div className={`relative w-full h-2 bg-zinc-800 rounded-full overflow-hidden border border-black shadow-inner ${isCorrupted ? 'animate-pulse' : ''}`}>
+          {/* Divinity (Gold) */}
+          <div
+            className="absolute left-0 top-0 h-full bg-gradient-to-r from-amber-600 to-amber-300 transition-all duration-1000 shadow-[0_0_10px_rgba(251,191,36,0.5)]"
+            style={{ width: `${divinityPercent}%`, boxShadow: isHoly ? '0 0 15px #fbbf24' : '' }}
+          />
+          {/* Corruption (Purple) */}
+          <div
+            className="absolute right-0 top-0 h-full bg-gradient-to-l from-purple-900 to-indigo-700 transition-all duration-1000 shadow-[0_0_10px_rgba(107,33,168,0.5)]"
+            style={{ width: `${100 - divinityPercent}%`, borderLeft: isCorrupted ? '1px solid #ef4444' : 'none' }}
+          />
+          {isCorrupted && <div className="absolute inset-0 bg-red-500/20 pointer-events-none" />}
+        </div>
+      </div>
+
+      {/* Right Cluster: Realm Info */}
+      <div className="flex items-center gap-6">
+        <div className="flex flex-col items-end">
+          <span className="gothic-font text-sm font-bold text-amber-400 tracking-tight leading-none">{heraldInfo.name}</span>
+          <span className="serif-font text-[10px] text-stone-400 italic">{formatDate(currentDate)}</span>
+        </div>
+
+        <div className="h-8 w-[1px] bg-amber-900/30" />
+
+        <div className="flex gap-4">
+          <div className="flex flex-col items-center group cursor-help" title="Voxel Count">
+            <Database size={12} className="text-stone-500" />
+            <span className="text-[10px] font-bold text-stone-300">{voxelCount.toLocaleString()}</span>
+          </div>
+          <div className="flex flex-col items-center group cursor-help" title="Domain Scope">
+            <Users size={12} className="text-stone-500" />
+            <span className="text-[10px] font-bold text-stone-300">{domainScope}</span>
+          </div>
+        </div>
+
+        <button
+          onClick={onSettingsClick}
+          className="p-2 hover:bg-white/5 rounded-full transition-colors text-stone-400 hover:text-amber-400"
+        >
+          <Settings size={18} />
+        </button>
+      </div>
+    </motion.div>
   );
 }
