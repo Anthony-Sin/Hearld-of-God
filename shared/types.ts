@@ -1,28 +1,44 @@
 import { MapData, BaronyData, Biome, MapMode, LODLevel } from '../map/types';
-
-export type { Biome, MapMode, LODLevel };
-import { MapData, BaronyData } from '../map/types';
 import type { HeraldStats, Trait } from '../ruler/state';
 
-export type { HeraldStats, Trait };
+export type { Biome, MapMode, LODLevel, HeraldStats, Trait };
 
 export interface GameResources {
   gold: number;
   prestige: number;
   piety: number;
   renown: number;
+  followers: number;
   goldDelta?: number;
   prestigeDelta?: number;
   pietyDelta?: number;
   renownDelta?: number;
+  followersDelta?: number;
 }
 
-export interface HeraldStats {
-  authority: number;
-  zeal: number;
-  cunning: number;
-  valor: number;
-  wisdom: number;
+export interface SkillNode {
+  id: string;
+  name: string;
+  description: string;
+  branch: 'wrath' | 'grace' | 'shadow';
+  cost: {
+    piety?: number;
+    followers?: number;
+    gold?: number;
+  };
+  requirements: string[];
+  abilityId?: string;
+  statModifiers?: Partial<HeraldStats>;
+}
+
+export interface ActiveAbility {
+  id: string;
+  name: string;
+  description: string;
+  pietyCost: number;
+  followersCost?: number;
+  cooldown: number; // in days
+  icon: string;
 }
 
 export interface RulerTrait {
@@ -64,8 +80,9 @@ export interface SharedState {
   mapData: MapData;
   selectedProvince: BaronyData | null;
   activeModal: ActiveModal;
-  heraldStats: HeraldStats;
   divineBalance: DivineBalance;
   heraldInfo: HeraldInfo;
-  traits: RulerTrait[];
+  uiTraits: RulerTrait[];
+  unlockedSkills: string[];
+  abilityCooldowns: Record<string, number>;
 }
