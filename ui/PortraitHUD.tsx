@@ -1,133 +1,38 @@
 import {
-  Shield, Zap, Sword, Flame, BookOpen, Scale, Sparkles, Star,
-  Crown, Heart, Coins, Trophy, Hash
+  Shield, Zap, Sword, Flame, BookOpen, Star, Crown, Trophy, User, Scroll, Brain, Sparkles, Skull
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import VoxelCharacter from '@ruler/VoxelCharacter';
 import { BaronyData } from '@map/types';
-import { motion, AnimatePresence } from 'motion/react';
-import { HeraldStats, RulerTrait, DivineBalance, HeraldInfo } from '../shared/types';
-import { Shield, Sparkles, Sword, User, Scroll, Crown, Brain, Flame, Zap } from 'lucide-react';
-import VoxelCharacter from '@ruler/VoxelCharacter';
-import { BaronyData } from '@map/mapGenerator';
 import { motion } from 'motion/react';
-import { HeraldStats, Trait } from '../shared/types';
+import { HeraldStats, Trait, DivineBalance, HeraldInfo } from '../shared/types';
+import { HERALD_SKILL_TREE, HERALD_ABILITIES } from '../ruler/skills';
 
 interface PortraitHUDProps {
   selectedProvince: BaronyData | null;
   heraldInfo: HeraldInfo;
   heraldStats: HeraldStats;
-  traits: RulerTrait[];
+  traits: Trait[];
   divineBalance: DivineBalance;
   onAction?: (action: any) => void;
+  SYMBOL_ICONS: Record<string, any>;
+  unlockedSkills: string[];
+  abilityCooldowns: Record<string, number>;
+  castAbility: (id: string) => void;
 }
 
 export default function PortraitHUD({
   selectedProvince,
-  heraldInfo,
-  heraldStats,
+  onAction,
+  SYMBOL_ICONS,
+  heraldStats: computedHeraldStats,
   traits,
+  heraldInfo,
   divineBalance,
-  onAction
+  unlockedSkills,
+  abilityCooldowns,
+  castAbility
 }: PortraitHUDProps) {
-
-  const stats = [
-    { label: 'Authority', value: heraldStats.authority, icon: Shield, color: 'text-sky-400' },
-    { label: 'Zeal', value: heraldStats.zeal, icon: Flame, color: 'text-amber-500' },
-    { label: 'Cunning', value: heraldStats.cunning, icon: Zap, color: 'text-purple-400' },
-    { label: 'Valor', value: heraldStats.valor, icon: Sword, color: 'text-rose-500' },
-    { label: 'Wisdom', value: heraldStats.wisdom, icon: BookOpen, color: 'text-emerald-400' },
-  ];
-
-  const getIconComponent = (name: string) => {
-    const Icon = (LucideIcons as any)[name];
-    return Icon ? <Icon size={14} /> : <Star size={14} />;
-  };
-
-  return (
-    <div className="fixed bottom-8 left-8 flex flex-col items-start gap-4 pointer-events-none z-40">
-      <div className="relative pointer-events-auto">
-        {/* Herald Name & Title */}
-        <div className="absolute -top-14 left-4 flex flex-col">
-          <h3 className="gothic-font text-xl font-black text-amber-400 uppercase tracking-wide drop-shadow-lg leading-none">
-            {heraldInfo.name}
-          </h3>
-          <span className="serif-font text-xs text-stone-400 italic">
-            {heraldInfo.title}
-          </span>
-          <div className="h-[2px] w-32 bg-gradient-to-r from-amber-500/50 to-transparent mt-1" />
-        </div>
-
-        {/* Stat Badge Arc */}
-        <div className="absolute -left-6 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-30">
-          {stats.map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: i * 0.1 }}
-              className="group relative flex items-center"
-            >
-              <div className={`w-8 h-8 rounded-full bg-stone-900 border border-amber-900/30 flex items-center justify-center ${stat.color} shadow-lg cursor-help transition-all group-hover:scale-110 group-hover:border-amber-500/50`}>
-                <stat.icon size={14} />
-              </div>
-              <div className="absolute left-10 opacity-0 group-hover:opacity-100 transition-opacity bg-stone-900 border border-amber-900/30 px-2 py-1 rounded shadow-2xl whitespace-nowrap z-50">
-                <span className="text-[10px] font-bold text-stone-200 uppercase tracking-widest">{stat.label}: </span>
-                <span className={`text-[10px] font-bold ${stat.color}`}>{stat.value}</span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Voxel Portrait Frame */}
-        <div className="w-48 h-48 bg-stone-900 border-4 border-amber-900/40 rounded-full overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] relative group ml-6 ring-2 ring-amber-500/10">
-          <VoxelCharacter provinceData={selectedProvince} />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-
-          {/* Action Buttons Arc (CK3 Style) */}
-          <div className="absolute bottom-2 inset-x-0 flex justify-center gap-2 px-4 translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-             <button onClick={() => onAction?.('character')} className="w-8 h-8 rounded-full bg-stone-800 border border-amber-900/40 flex items-center justify-center text-amber-400 hover:bg-amber-500 hover:text-black transition-all shadow-lg">
-                <Crown size={14} />
-             </button>
-             <button onClick={() => onAction?.('military')} className="w-8 h-8 rounded-full bg-stone-800 border border-amber-900/40 flex items-center justify-center text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-lg">
-                <Sword size={14} />
-             </button>
-             <button onClick={() => onAction?.('decisions')} className="w-8 h-8 rounded-full bg-stone-800 border border-amber-900/40 flex items-center justify-center text-sky-400 hover:bg-sky-400 hover:text-white transition-all shadow-lg">
-                <Sparkles size={14} />
-             </button>
-          </div>
-        </div>
-
-        {/* Traits Bar */}
-        <div className="absolute -bottom-6 left-10 flex items-center gap-1">
-          {traits.slice(0, 5).map((trait, i) => (
-            <motion.div
-              key={trait.id}
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5 + i * 0.1 }}
-              className="group relative"
-            >
-              <div className="w-7 h-7 bg-stone-800 border border-stone-600 rounded flex items-center justify-center text-stone-300 shadow-md cursor-help hover:border-amber-500/50 transition-colors">
-                {getIconComponent(trait.lucideIcon)}
-              </div>
-              <div className="absolute bottom-9 left-0 opacity-0 group-hover:opacity-100 transition-opacity bg-stone-900 border border-amber-900/30 p-3 rounded shadow-2xl w-48 z-50 pointer-events-none">
-                <h4 className="text-[10px] font-bold text-amber-400 uppercase mb-1">{trait.name}</h4>
-                <p className="serif-font text-[10px] text-stone-400 italic leading-tight">{trait.description}</p>
-              </div>
-            </motion.div>
-          ))}
-          {traits.length > 5 && (
-            <div className="w-7 h-7 bg-stone-900 border border-stone-700 rounded flex items-center justify-center text-[10px] font-bold text-stone-500">
-              +{traits.length - 5}
-            </div>
-          )}
-  SYMBOL_ICONS: Record<string, any>;
-  heraldStats: HeraldStats;
-  traits: Trait[];
-}
-
-export default function PortraitHUD({ selectedProvince, onAction, SYMBOL_ICONS, heraldStats: computedHeraldStats, traits }: PortraitHUDProps) {
 
   const statConfig = [
     { key: 'authority', icon: Shield, color: 'text-amber-400', label: 'AUTHORITY', glow: 'shadow-[0_0_15px_rgba(251,191,36,0.3)]' },
@@ -138,15 +43,15 @@ export default function PortraitHUD({ selectedProvince, onAction, SYMBOL_ICONS, 
   ];
 
   return (
-    <div className="absolute bottom-8 left-8 flex flex-col gap-3 pointer-events-auto z-30 scale-110 origin-bottom-left">
+    <div className="fixed bottom-8 left-8 flex flex-col gap-3 pointer-events-auto z-30 scale-110 origin-bottom-left">
       <div className="relative">
         {/* Character Info (Name/Title) */}
         <div className="absolute -top-14 left-2 flex flex-col gap-0 items-start">
           <span className="text-[10px] font-black text-amber-500/90 tracking-[0.4em] uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">
-            Divine Herald
+            {heraldInfo.title}
           </span>
           <h3 className="text-lg font-black text-white tracking-[0.15em] uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,1)] leading-tight italic font-serif">
-            The Envoy of Heaven
+            {heraldInfo.name}
           </h3>
           <div className="h-[2px] w-32 bg-gradient-to-r from-amber-500 via-amber-200/50 to-transparent mt-1" />
         </div>
@@ -155,6 +60,7 @@ export default function PortraitHUD({ selectedProvince, onAction, SYMBOL_ICONS, 
         <div className="absolute -left-4 top-0 bottom-0 flex flex-col justify-center gap-3 z-30">
           {statConfig.map((stat) => {
             const Icon = stat.icon;
+            const statValue = computedHeraldStats[stat.key as keyof HeraldStats];
             return (
               <div key={stat.key} className="flex items-center gap-3 group">
                 <div className={`w-9 h-9 rounded-full bg-gradient-to-br from-black to-gray-900 border-2 border-amber-900/40 flex items-center justify-center ${stat.color} ${stat.glow} group-hover:border-amber-500/50 transition-all duration-300 relative`}>
@@ -163,7 +69,7 @@ export default function PortraitHUD({ selectedProvince, onAction, SYMBOL_ICONS, 
                 </div>
                 <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0 bg-black/95 backdrop-blur-md px-3 py-1.5 rounded-sm text-[10px] font-black text-white whitespace-nowrap shadow-[0_10px_30px_rgba(0,0,0,0.8)] border border-amber-900/30 ring-1 ring-white/5">
                   <span className="tracking-[0.2em]">{stat.label}</span>
-                  <span className={`${stat.color} ml-3 text-sm font-serif`}>{computedHeraldStats[stat.key as keyof typeof computedHeraldStats]}</span>
+                  <span className={`${stat.color} ml-3 text-sm font-serif`}>{statValue}</span>
                 </div>
               </div>
             );
@@ -184,6 +90,45 @@ export default function PortraitHUD({ selectedProvince, onAction, SYMBOL_ICONS, 
 
            {/* Inner Border Glow */}
            <div className="absolute inset-0 rounded-full border border-white/5 pointer-events-none" />
+        </div>
+
+        {/* Active Abilities Bar */}
+        <div className="absolute -right-32 top-1/2 -translate-y-1/2 flex flex-col gap-2">
+          {HERALD_SKILL_TREE.filter(n => n.abilityId && unlockedSkills.includes(n.id)).map(node => {
+            const ability = (HERALD_ABILITIES as any)[node.abilityId!];
+            const cooldown = abilityCooldowns[ability.id] || 0;
+            const Icon = (LucideIcons as any)[ability.icon] || Sparkles;
+
+            return (
+              <motion.button
+                key={ability.id}
+                initial={{ x: 20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => castAbility(ability.id)}
+                disabled={cooldown > 0}
+                className={`w-12 h-12 rounded-sm border flex items-center justify-center shadow-2xl relative group ${
+                  cooldown > 0 ? 'bg-black/60 border-white/5 text-white/20' : 'bg-sky-900/40 border-sky-500/50 text-sky-400 hover:bg-sky-500/20'
+                }`}
+              >
+                <Icon size={24} />
+                {cooldown > 0 && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/60 font-black text-[10px] text-white">
+                    {cooldown}d
+                  </div>
+                )}
+                <div className="absolute left-14 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 border border-white/10 p-3 rounded shadow-2xl w-48 z-50 pointer-events-none">
+                   <h4 className="text-[10px] font-black text-sky-400 uppercase mb-1">{ability.name}</h4>
+                   <p className="text-[9px] text-white/60 leading-tight">{ability.description}</p>
+                   <div className="mt-2 flex gap-2">
+                      <span className="text-[8px] font-bold text-sky-500 uppercase">{ability.pietyCost} Piety</span>
+                      {ability.followersCost && <span className="text-[8px] font-bold text-amber-500 uppercase">{ability.followersCost} Foll.</span>}
+                   </div>
+                </div>
+              </motion.button>
+            );
+          })}
         </div>
 
         {/* Anchor Action Tray */}
@@ -222,18 +167,20 @@ export default function PortraitHUD({ selectedProvince, onAction, SYMBOL_ICONS, 
       <div className="ml-10 flex flex-col gap-1 w-32 pointer-events-auto mt-6">
         <div className="flex justify-between items-end">
           <span className="text-[8px] font-bold text-amber-500/60 uppercase tracking-tighter">Divinity</span>
-          <span className="text-[9px] font-bold text-amber-400">{divineBalance.divinity}</span>
+          <span className="text-[9px] font-bold text-amber-400">{computedHeraldStats.divinity}</span>
         </div>
         <div className="h-1 bg-stone-800 rounded-full overflow-hidden shadow-inner">
-          <div className="h-full bg-amber-500" style={{ width: `${divineBalance.divinity}%` }} />
+          <div className="h-full bg-amber-500" style={{ width: `${computedHeraldStats.divinity}%` }} />
         </div>
 
         <div className="flex justify-between items-end mt-1">
           <span className="text-[8px] font-bold text-purple-500/60 uppercase tracking-tighter">Corruption</span>
-          <span className="text-[9px] font-bold text-purple-400">{divineBalance.corruption}</span>
+          <span className="text-[9px] font-bold text-purple-400">{computedHeraldStats.corruption}</span>
         </div>
         <div className="h-1 bg-stone-800 rounded-full overflow-hidden shadow-inner">
-          <div className="h-full bg-purple-600" style={{ width: `${divineBalance.corruption}%` }} />
+          <div className="h-full bg-purple-600" style={{ width: `${computedHeraldStats.corruption}%` }} />
+        </div>
+
         {/* Coat of Arms (Banner) */}
         <div className="absolute bottom-8 -right-4 w-16 h-24 bg-[#0a0a0a] border-4 border-[#3b2313] flex flex-col items-center justify-start p-1.5 shadow-[0_15px_35px_rgba(0,0,0,0.9)] z-50 transform rotate-2">
            <div className="w-full h-2 bg-gradient-to-r from-amber-700 via-amber-400 to-amber-700 mb-1.5 shadow-sm" />

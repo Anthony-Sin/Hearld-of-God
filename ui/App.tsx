@@ -42,13 +42,19 @@ export default function App() {
     openModal,
     closeModal,
     heraldInfo,
-    heraldStats,
     divineBalance,
-    traits,
+    uiTraits,
     notifications,
     blessProvince,
-    investigate
+    investigate,
+    unlockSkill,
+    updateResources,
+    unlockedSkills,
+    abilityCooldowns,
+    castAbility
   } = useGameState();
+
+  const [showRegions, setShowRegions] = useState(false);
 
   return (
     <div className="relative w-full h-screen bg-[#0f0f0f] font-sans text-[#e0e0e0] overflow-hidden">
@@ -89,48 +95,47 @@ export default function App() {
               voxelCount={mapData.voxels.length}
               domainScope={mapData.baronies.length}
               onSettingsClick={() => openModal('settings')}
+              stats={computedHeraldStats}
             />
-            {/* Top Bar Resources (Moved to float top-left-ish) */}
-            <div className="absolute top-6 left-12 h-10 pointer-events-auto z-40">
-              <TopBar stats={computedHeraldStats} />
-            </div>
 
             {/* Province Detail Panel (Slide-in Right) */}
             <ProvinceDetail
-              selectedProvince={selectedProvince}
+              selectedProvince={selectedProvince as any}
               mapData={mapData}
               onDeselect={() => setSelectedProvinceId(null)}
               onBless={blessProvince}
               onInvestigate={investigate}
               piety={playerResources.piety}
+              followers={playerResources.followers}
+              castAbility={castAbility}
             />
 
             {/* Character Portrait (Bottom Left) */}
             <PortraitHUD 
               selectedProvince={selectedProvince} 
               heraldInfo={heraldInfo}
-              heraldStats={heraldStats}
+              heraldStats={computedHeraldStats}
               traits={traits}
               divineBalance={divineBalance}
               onAction={openModal}
-              heraldStats={computedHeraldStats}
-              traits={traits}
+              SYMBOL_ICONS={SYMBOL_ICONS}
+              unlockedSkills={unlockedSkills}
+              abilityCooldowns={abilityCooldowns}
+              castAbility={castAbility}
             />
 
-            {/* Combined Bottom Right Timeline & Map Mode Controls */}
-            <div className="absolute bottom-8 right-8 flex flex-col items-end gap-3 pointer-events-auto z-40">
-               {/* Map Mode Toggle (Consolidated here) */}
-              <div className="flex flex-col gap-0.5 scale-75 origin-bottom-right">
-                <span className="hud-label opacity-40 text-right">Cartography Mode</span>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={regenerate}
-                    disabled={isGenerating}
-                    className="border border-white/10 px-4 py-2 bg-black/60 backdrop-blur-sm hover:bg-white/10 text-[9px] tracking-[0.2em] uppercase font-bold transition-all disabled:opacity-30"
-                  >
-                    {isGenerating ? 'Synthesizing...' : 'Regenerate'}
-                  </button>
-                  <button 
+            {/* Bottom Right HUD (Game Speed & Map Modes) */}
+            <div className={`absolute bottom-8 flex flex-col items-end gap-3 pointer-events-auto z-40 transition-all duration-500 ${selectedProvinceId ? 'right-[424px]' : 'right-8'}`}>
+              <div className="flex gap-2 mb-2">
+                <button
+                  onClick={regenerate}
+                  disabled={isGenerating}
+                  className="bg-stone-900/90 border border-amber-900/30 px-4 py-2 hover:bg-stone-800 text-[10px] gothic-font uppercase tracking-widest text-amber-500 transition-all disabled:opacity-30 shadow-2xl"
+                >
+                  {isGenerating ? 'Synthesizing...' : 'Regenerate World'}
+                </button>
+                <div className="flex gap-1">
+                   <button
                     onClick={() => setMapMode('political')}
                     className={`px-3 py-1 border transition-all text-[9px] font-bold uppercase ${mapMode === 'political' ? 'bg-sky-500/20 border-sky-500/50 text-sky-400' : 'bg-black/60 border-white/10 text-white/30'}`}
                   >
@@ -149,16 +154,6 @@ export default function App() {
                     Culture
                   </button>
                 </div>
-            {/* Bottom Right HUD (Game Speed & Map Modes) */}
-            <div className={`absolute bottom-8 flex flex-col items-end gap-3 pointer-events-auto z-40 transition-all duration-500 ${selectedProvinceId ? 'right-[424px]' : 'right-8'}`}>
-              <div className="flex gap-2 mb-2">
-                <button
-                  onClick={regenerate}
-                  disabled={isGenerating}
-                  className="bg-stone-900/90 border border-amber-900/30 px-4 py-2 hover:bg-stone-800 text-[10px] gothic-font uppercase tracking-widest text-amber-500 transition-all disabled:opacity-30 shadow-2xl"
-                >
-                  {isGenerating ? 'Synthesizing...' : 'Regenerate World'}
-                </button>
                 <button
                   onClick={() => setShowRegions(!showRegions)}
                   className={`px-3 flex items-center justify-center border transition-all shadow-2xl ${showRegions ? 'bg-amber-600/20 border-amber-500/50 text-amber-400' : 'bg-stone-900/90 border-amber-900/30 text-stone-500'}`}
@@ -204,6 +199,10 @@ export default function App() {
               selectedProvinceName={selectedProvince?.name}
               heraldStats={computedHeraldStats}
               traits={traits}
+              unlockedSkills={unlockedSkills}
+              unlockSkill={unlockSkill}
+              resources={playerResources}
+              updateResources={updateResources}
             />
           </motion.div>
         )}

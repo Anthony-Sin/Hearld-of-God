@@ -1,34 +1,46 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Shield, Sword, User, Scroll, X } from 'lucide-react';
-import { ActiveModal } from '@shared/types';
-import { Shield, Sword, User, Scroll, X, Settings } from 'lucide-react';
-import { ActiveModal } from '../shared/types';
-import { Shield, Sword, User, Scroll, X, Sparkles, Skull, Trophy, Flame, Zap, Brain } from 'lucide-react';
-import { HeraldStats, Trait } from '../shared/types';
+import {
+  Shield, Sword, User, Scroll, X, Settings, Sparkles, Skull, Trophy, Flame, Zap, Brain, Lock, Check
+} from 'lucide-react';
+import { ActiveModal, HeraldStats, Trait, SkillNode, GameResources } from '../shared/types';
+import { HERALD_SKILL_TREE } from '../ruler/skills';
 
 interface ActionModalsProps {
-  activeModal: 'character' | 'military' | 'council' | 'decisions' | null;
+  activeModal: ActiveModal;
   closeModal: () => void;
   selectedProvinceName?: string;
   heraldStats: HeraldStats;
   traits: Trait[];
+  unlockedSkills: string[];
+  unlockSkill: (id: string) => void;
+  resources: GameResources;
+  updateResources: (delta: Record<string, number>) => void;
 }
 
-export default function ActionModals({ activeModal, closeModal, heraldStats: computedHeraldStats, traits }: ActionModalsProps) {
+export default function ActionModals({
+  activeModal,
+  closeModal,
+  selectedProvinceName,
+  heraldStats: computedHeraldStats,
+  traits,
+  unlockedSkills,
+  unlockSkill,
+  resources,
+  updateResources
+}: ActionModalsProps) {
 
   if (!activeModal) return null;
 
+  const [activeTab, setActiveTab] = useState<'info' | 'skills'>('info');
+
   const getTitle = () => {
     switch (activeModal) {
-      case 'character': return 'Character Sheet';
-      case 'military': return 'Military Operations';
-      case 'council': return 'Royal Council';
-      case 'decisions': return 'Realm Decisions';
-      case 'settings': return 'Game Settings';
       case 'character': return 'Herald of the Divine';
       case 'military': return 'Holy Crusade';
       case 'council': return 'Apostolic Council';
       case 'decisions': return 'Divine Mandates';
+      case 'settings': return 'Game Settings';
       default: return '';
     }
   };
@@ -52,9 +64,10 @@ export default function ActionModals({ activeModal, closeModal, heraldStats: com
       { label: 'Spymaster', value: 'The Shadow' }
     ],
     decisions: [
-      { label: 'Hold a Feast', cost: '100 Gold', gain: '+20 Prestige' },
-      { label: 'Issue New Coinage', cost: '50 piety', gain: '+2.0 Gold/month' },
-      { label: 'Hunt in the Royal Woods', cost: '25 Gold', gain: '-10 Stress' }
+      { label: 'Manifest Holy Presence', cost: '120 Piety', gain: '+15 Divinity', color: 'bg-amber-500/10 border-amber-500/30 text-amber-400', desc: 'Briefly tear the veil between worlds to inspire the faithful.' },
+      { label: 'Sacramental Purge', cost: '80 Piety', gain: '-20 Corruption', color: 'bg-purple-500/10 border-purple-500/30 text-purple-400', desc: 'Cleanse your mortal vessel through intense ritualistic suffering.' },
+      { label: 'Writ of Condemnation', cost: '150 Piety', gain: '+25 Authority', color: 'bg-red-500/10 border-red-500/30 text-red-500', desc: 'Formally cast out a political rival from the grace of the heavens.' },
+      { label: 'Seek Arcane Visions', cost: '50 Piety', gain: '+5 Wisdom', color: 'bg-sky-500/10 border-sky-500/30 text-sky-400', desc: 'Meditate upon the ancient scrolls to unlock hidden truths.' }
     ],
     settings: [
       { label: 'Music Volume', value: '80%' },
@@ -62,6 +75,8 @@ export default function ActionModals({ activeModal, closeModal, heraldStats: com
       { label: 'Difficulty', value: 'Herald (Normal)' },
       { label: 'Autosave', value: 'Monthly' }
     ]
+  };
+
   const statIcons: Record<string, any> = {
     authority: Shield,
     zeal: Flame,
@@ -78,41 +93,6 @@ export default function ActionModals({ activeModal, closeModal, heraldStats: com
     <AnimatePresence>
       <div className="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none p-12 bg-black/40 backdrop-blur-[2px]">
         <motion.div
-           initial={{ opacity: 0, scale: 0.95, y: 20 }}
-           animate={{ opacity: 1, scale: 1, y: 0 }}
-           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-           className="w-full max-w-md bg-stone-900 border border-amber-900/30 shadow-[0_0_100px_rgba(0,0,0,1)] pointer-events-auto overflow-hidden rounded-sm"
-        >
-          <div className="flex items-center justify-between px-6 py-4 border-b border-amber-900/20 bg-stone-800/50">
-             <div className="flex items-center gap-3">
-               {activeModal === 'military' && <Sword size={18} className="text-rose-500" />}
-               {activeModal === 'character' && <User size={18} className="text-amber-400" />}
-               {activeModal === 'council' && <Shield size={18} className="text-sky-400" />}
-               {activeModal === 'decisions' && <Scroll size={18} className="text-amber-500" />}
-               {activeModal === 'settings' && <Settings size={18} className="text-stone-400" />}
-               <h2 className="gothic-font text-sm font-black tracking-[0.2em] uppercase text-stone-100">{getTitle()}</h2>
-             </div>
-             <button onClick={closeModal} className="text-stone-500 hover:text-white transition-colors">
-               <X size={18} />
-             </button>
-          </div>
-
-          <div className="p-6 flex flex-col gap-4">
-             {(activeModal !== 'decisions') ? (
-                (menuItems[activeModal as keyof typeof menuItems] as any[]).map((item, i) => (
-                  <div key={i} className="flex flex-col gap-1 border-l-2 border-amber-500/30 pl-4 py-1 hover:bg-white/5 transition-colors cursor-default">
-                    <span className="serif-font text-[10px] font-bold text-stone-500 uppercase tracking-widest">{item.label}</span>
-                    <span className="text-sm text-stone-200 font-medium">{item.value}</span>
-                  </div>
-                ))
-             ) : (
-                menuItems.decisions.map((item, i) => (
-                  <button key={i} className="flex items-center justify-between p-4 bg-stone-800/50 border border-amber-900/10 hover:bg-amber-900/10 transition-all text-left group">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-xs font-bold text-stone-200 uppercase tracking-wider">{item.label}</span>
-                      <span className="serif-font text-[10px] text-emerald-400 font-bold tracking-tight">{item.gain}</span>
-                    </div>
-                    <span className="text-[10px] font-bold text-amber-500 uppercase px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded group-hover:bg-amber-500 group-hover:text-black transition-colors">{item.cost}</span>
            initial={{ opacity: 0, scale: 0.9, rotateX: -10 }}
            animate={{ opacity: 1, scale: 1, rotateX: 0 }}
            exit={{ opacity: 0, scale: 0.9, rotateX: 10 }}
@@ -133,6 +113,7 @@ export default function ActionModals({ activeModal, closeModal, heraldStats: com
                  {activeModal === 'character' && <User size={20} className="text-white" />}
                  {activeModal === 'council' && <Shield size={20} className="text-amber-500" />}
                  {activeModal === 'decisions' && <Scroll size={20} className="text-sky-500" />}
+                 {activeModal === 'settings' && <Settings size={20} className="text-stone-400" />}
                </div>
                <div className="flex flex-col">
                  <h2 className="text-xs font-black tracking-[0.4em] uppercase text-white drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">{getTitle()}</h2>
@@ -147,7 +128,25 @@ export default function ActionModals({ activeModal, closeModal, heraldStats: com
           {/* Content Area */}
           <div className="flex-1 p-10 overflow-y-auto custom-scrollbar bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]">
              {activeModal === 'character' && (
-                <div className="flex flex-col gap-10">
+                <div className="flex flex-col gap-8">
+                  {/* Tabs */}
+                  <div className="flex gap-4 border-b border-amber-900/20 pb-4">
+                    <button
+                      onClick={() => setActiveTab('info')}
+                      className={`text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 border transition-all ${activeTab === 'info' ? 'bg-amber-900/20 border-amber-500/50 text-amber-500' : 'border-transparent text-stone-500 hover:text-stone-300'}`}
+                    >
+                      Character Info
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('skills')}
+                      className={`text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 border transition-all ${activeTab === 'skills' ? 'bg-sky-900/20 border-sky-500/50 text-sky-500' : 'border-transparent text-stone-500 hover:text-stone-300'}`}
+                    >
+                      Celestial Path
+                    </button>
+                  </div>
+
+                  {activeTab === 'info' ? (
+                    <div className="flex flex-col gap-10">
                   {/* Top Stats Section */}
                   <div className="grid grid-cols-5 gap-4">
                     {['authority', 'zeal', 'cunning', 'valor', 'wisdom'].map((stat) => {
@@ -156,7 +155,7 @@ export default function ActionModals({ activeModal, closeModal, heraldStats: com
                         <div key={stat} className="flex flex-col items-center gap-3 p-4 bg-white/[0.02] border border-white/5 rounded-sm group hover:border-amber-900/40 transition-all">
                           <Icon size={18} className="text-amber-500/40 group-hover:text-amber-500 transition-colors" />
                           <div className="flex flex-col items-center">
-                            <span className="text-[14px] font-black font-serif text-white">{computedHeraldStats[stat as keyof typeof computedHeraldStats]}</span>
+                            <span className="text-[14px] font-black font-serif text-white">{computedHeraldStats[stat as keyof HeraldStats]}</span>
                             <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">{stat}</span>
                           </div>
                         </div>
@@ -230,6 +229,56 @@ export default function ActionModals({ activeModal, closeModal, heraldStats: com
                       </div>
                     </div>
                   </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-12 py-4">
+                      {['wrath', 'grace', 'shadow'].map((branch) => (
+                        <div key={branch} className="flex flex-col gap-6">
+                          <h3 className="text-[10px] font-black text-amber-500/60 uppercase tracking-[0.4em] flex items-center gap-4">
+                            <span className="w-8 h-[1px] bg-amber-900/30" />
+                            {branch} Branch
+                            <span className="flex-1 h-[1px] bg-amber-900/30" />
+                          </h3>
+                          <div className="grid grid-cols-3 gap-6">
+                            {HERALD_SKILL_TREE.filter(n => n.branch === branch).map((node) => {
+                              const isUnlocked = unlockedSkills.includes(node.id);
+                              const canUnlock = node.requirements.every(req => unlockedSkills.includes(req)) &&
+                                               (!node.cost.piety || (resources.piety || 0) >= node.cost.piety) &&
+                                               (!node.cost.followers || resources.followers >= node.cost.followers);
+
+                              return (
+                                <button
+                                  key={node.id}
+                                  disabled={isUnlocked || !canUnlock}
+                                  onClick={() => unlockSkill(node.id)}
+                                  className={`p-4 border rounded-sm flex flex-col gap-3 transition-all text-left relative group ${
+                                    isUnlocked ? 'bg-emerald-500/10 border-emerald-500/40' :
+                                    canUnlock ? 'bg-white/5 border-white/10 hover:border-amber-500/50 hover:bg-white/10' :
+                                    'bg-black/40 border-white/5 opacity-40 cursor-not-allowed'
+                                  }`}
+                                >
+                                  {isUnlocked && <Check size={12} className="absolute top-2 right-2 text-emerald-500" />}
+                                  {!isUnlocked && !canUnlock && <Lock size={12} className="absolute top-2 right-2 text-white/20" />}
+
+                                  <div className="flex flex-col gap-1">
+                                    <span className={`text-[10px] font-black uppercase tracking-widest ${isUnlocked ? 'text-emerald-400' : 'text-amber-500/80'}`}>{node.name}</span>
+                                    <p className="text-[9px] text-white/40 leading-tight line-clamp-2">{node.description}</p>
+                                  </div>
+
+                                  {!isUnlocked && (
+                                    <div className="flex gap-2 mt-auto pt-2 border-t border-white/5">
+                                      {node.cost.piety && <span className="text-[8px] font-bold text-sky-400 uppercase">{node.cost.piety} Piety</span>}
+                                      {node.cost.followers && <span className="text-[8px] font-bold text-amber-500 uppercase">{node.cost.followers} Foll.</span>}
+                                    </div>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
              )}
 
@@ -242,12 +291,7 @@ export default function ActionModals({ activeModal, closeModal, heraldStats: com
                     </p>
                   </div>
                   <div className="flex flex-col gap-4">
-                    {[
-                      { label: 'Manifest Holy Presence', cost: '120 Piety', gain: '+15 Divinity', color: 'bg-amber-500/10 border-amber-500/30 text-amber-400', desc: 'Briefly tear the veil between worlds to inspire the faithful.' },
-                      { label: 'Sacramental Purge', cost: '80 Piety', gain: '-20 Corruption', color: 'bg-purple-500/10 border-purple-500/30 text-purple-400', desc: 'Cleanse your mortal vessel through intense ritualistic suffering.' },
-                      { label: 'Writ of Condemnation', cost: '150 Piety', gain: '+25 Authority', color: 'bg-red-500/10 border-red-500/30 text-red-500', desc: 'Formally cast out a political rival from the grace of the heavens.' },
-                      { label: 'Seek Arcane Visions', cost: '50 Piety', gain: '+5 Wisdom', color: 'bg-sky-500/10 border-sky-500/30 text-sky-400', desc: 'Meditate upon the ancient scrolls to unlock hidden truths.' }
-                    ].map((item, i) => (
+                    {menuItems.decisions.map((item, i) => (
                       <button key={i} className={`flex flex-col p-6 border transition-all group relative overflow-hidden bg-black/40 hover:bg-white/[0.02] hover:translate-x-1 ${item.color}`}>
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm font-black uppercase tracking-[0.2em] italic font-serif">{item.label}</span>
@@ -285,11 +329,19 @@ export default function ActionModals({ activeModal, closeModal, heraldStats: com
                   </button>
                 </div>
              )}
+
+             {activeModal === 'settings' && (
+                <div className="flex flex-col gap-4">
+                   {menuItems.settings.map((item, i) => (
+                    <div key={i} className="flex flex-col gap-1 border-l-2 border-amber-500/30 pl-4 py-1 hover:bg-white/5 transition-colors cursor-default">
+                      <span className="serif-font text-[10px] font-bold text-stone-500 uppercase tracking-widest">{item.label}</span>
+                      <span className="text-sm text-stone-200 font-medium">{item.value}</span>
+                    </div>
+                  ))}
+                </div>
+             )}
           </div>
 
-          <div className="px-6 py-4 bg-black/40 border-t border-amber-900/20 flex justify-end">
-             <button onClick={closeModal} className="px-4 py-2 bg-stone-800 border border-amber-900/20 text-[10px] font-bold uppercase tracking-widest text-stone-400 hover:text-amber-400 hover:border-amber-400/40 transition-all">
-               Close Record
           {/* Footer Bar */}
           <div className="px-10 py-5 bg-black border-t border-amber-900/20 flex justify-between items-center relative">
              <div className="flex items-center gap-6">

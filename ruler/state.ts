@@ -124,7 +124,14 @@ export function useRulerState() {
     piety: 50
   });
 
+  const [resources, setResources] = useState({
+    gold: 150,
+    followers: 10
+  });
+
   const [traitIds, setTraitIds] = useState<string[]>(['just', 'chosen_one']);
+  const [unlockedSkills, setUnlockedSkills] = useState<string[]>([]);
+  const [abilityCooldowns, setAbilityCooldowns] = useState<Record<string, number>>({});
 
   const addTrait = useCallback((traitId: string) => {
     setTraitIds(prev => prev.includes(traitId) ? prev : [...prev, traitId]);
@@ -165,12 +172,38 @@ export function useRulerState() {
   }, [stats, traitIds]);
 
   const updateResources = useCallback((delta: Record<string, number>) => {
+    if (delta.gold !== undefined || delta.followers !== undefined) {
+      setResources(prev => ({
+        gold: Math.max(0, prev.gold + (delta.gold || 0)),
+        followers: Math.max(0, prev.followers + (delta.followers || 0))
+      }));
+    }
+
     setStats(prev => {
       const next = { ...prev };
-      if (delta.gold !== undefined) { /* Herald doesn't use gold? Or maybe it does. Context says gold is in GameResources. */ }
-      if (delta.piety !== undefined) next.piety += delta.piety;
-      if (delta.renown !== undefined) next.renown += delta.renown;
-      if (delta.prestige !== undefined) next.renown += delta.prestige; // Map prestige to renown
+      if (delta.piety !== undefined) next.piety = Math.max(0, next.piety + delta.piety);
+      if (delta.renown !== undefined) next.renown = Math.max(0, next.renown + delta.renown);
+      if (delta.divinity !== undefined) next.divinity = Math.max(0, Math.min(100, next.divinity + delta.divinity));
+      if (delta.corruption !== undefined) next.corruption = Math.max(0, Math.min(100, next.corruption + delta.corruption));
+      return next;
+    });
+  }, []);
+
+  const unlockSkill = useCallback((skillId: string) => {
+    setUnlockedSkills(prev => prev.includes(skillId) ? prev : [...prev, skillId]);
+  }, []);
+
+  const startCooldown = useCallback((abilityId: string, days: number) => {
+    setAbilityCooldowns(prev => ({ ...prev, [abilityId]: days }));
+  }, []);
+
+  const tickCooldowns = useCallback(() => {
+    setAbilityCooldowns(prev => {
+      const next = { ...prev };
+      Object.keys(next).forEach(id => {
+        next[id] = Math.max(0, next[id] - 1);
+        if (next[id] === 0) delete next[id];
+      });
       return next;
     });
   }, []);
@@ -184,15 +217,20 @@ export function useRulerState() {
     computedStats,
     traitIds,
     traits: traitIds.map(id => TRAITS[id]).filter(Boolean),
+    unlockedSkills,
+    abilityCooldowns,
     addTrait,
     removeTrait,
     setStat,
     updateResources,
+    unlockSkill,
+    startCooldown,
+    tickCooldowns,
     makeDecision,
-    // Maintaining these names for compatibility if needed, but updating them to use new stats
     playerResources: {
-      gold: 0,
-      prestige: computedStats.renown,
+      gold: resources.gold,
+      followers: resources.followers,
+      prestige: computedStats.renown, // Map prestige to renown for now
       piety: computedStats.piety,
       renown: computedStats.renown
     }

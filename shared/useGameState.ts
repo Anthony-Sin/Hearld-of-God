@@ -3,6 +3,7 @@ import { useMapState } from '../map/state';
 import { useRulerState } from '../ruler/state';
 import { useUIState } from '../ui/state';
 import { MAP_WIDTH, MAP_DEPTH } from './constants';
+import { HERALD_ABILITIES } from '../ruler/skills';
 
 export function useGameState() {
   const [seed, setSeed] = useState(() => Math.floor(Math.random() * 1000000));
@@ -18,7 +19,6 @@ export function useGameState() {
     closeModal,
     advanceDate,
     heraldInfo,
-    heraldStats,
     divineBalance,
     traits: uiTraits,
     notifications,
@@ -32,7 +32,6 @@ export function useGameState() {
     selectedProvince,
     isGenerating,
     setIsGenerating,
-    regenerateMap,
     mapMode,
     setMapMode,
     lodLevel,
@@ -40,26 +39,30 @@ export function useGameState() {
   } = useMapState(seed, MAP_WIDTH, MAP_DEPTH);
 
   const {
-    playerResources,
-    updateResources,
-    traits: rulerTraits,
-    makeDecision
     stats: heraldStats,
     computedStats: computedHeraldStats,
     traits,
+    unlockedSkills,
+    abilityCooldowns,
     makeDecision,
     setStat,
     addTrait,
-    removeTrait
+    removeTrait,
+    updateResources,
+    unlockSkill,
+    startCooldown,
+    tickCooldowns,
+    playerResources
   } = useRulerState();
 
   // Combine resources with deltas (calculated based on realm size and stats)
   const extendedPlayerResources = {
     ...playerResources,
     goldDelta: Number((1.5 + mapData.baronies.length * 0.02).toFixed(1)),
-    prestigeDelta: Number((2.0 + heraldStats.authority * 0.5).toFixed(1)),
-    pietyDelta: Number((0.5 + heraldStats.zeal * 0.8).toFixed(1)),
-    renownDelta: Number((0.2 + mapData.empires.length * 0.1).toFixed(1))
+    prestigeDelta: Number((2.0 + computedHeraldStats.authority * 0.5).toFixed(1)),
+    pietyDelta: Number((0.5 + computedHeraldStats.zeal * 0.8).toFixed(1)),
+    renownDelta: Number((0.2 + mapData.empires.length * 0.1).toFixed(1)),
+    followersDelta: Number((0.1 + computedHeraldStats.zeal * 0.2).toFixed(1))
   };
 
   const startGame = useCallback(() => {
@@ -93,21 +96,57 @@ export function useGameState() {
     console.log(`Investigating province ${provinceId}`);
   }, [addNotification]);
 
+  const castAbility = useCallback((abilityId: string) => {
+    const ability = (HERALD_ABILITIES as any)[abilityId];
+    if (!ability) return;
+
+    if (abilityCooldowns[abilityId]) {
+      addNotification(`${ability.name} is on cooldown!`, 'error');
+      return;
+    }
+
+    if (heraldStats.piety < ability.pietyCost) {
+      addNotification(`Not enough piety for ${ability.name}!`, 'error');
+      return;
+    }
+
+    if (ability.followersCost && playerResources.followers < ability.followersCost) {
+      addNotification(`Not enough followers for ${ability.name}!`, 'error');
+      return;
+    }
+
+    // Spend resources
+    updateResources({
+      piety: -ability.pietyCost,
+      followers: -(ability.followersCost || 0)
+    });
+
+    // Apply effects (simplified for now)
+    if (abilityId === 'shadow_harvest') {
+      updateResources({ gold: 500, corruption: 10 });
+    }
+
+    startCooldown(abilityId, ability.cooldown);
+    addNotification(`${ability.name} cast successfully!`, 'success');
+  }, [abilityCooldowns, heraldStats.piety, playerResources.followers, updateResources, startCooldown, addNotification]);
+
   // Global Tick Logic
   useEffect(() => {
     if (gameSpeed === 0) return;
     const intervalTime = 1000 / gameSpeed;
     const interval = setInterval(() => {
       advanceDate();
+      tickCooldowns();
       updateResources({
-        gold: 0.1,
-        prestige: 0.05,
-        piety: 0.02,
-        renown: 0.01
+        gold: (extendedPlayerResources.goldDelta || 0) / 30, // Rough daily breakdown
+        prestige: (extendedPlayerResources.prestigeDelta || 0) / 30,
+        piety: (extendedPlayerResources.pietyDelta || 0) / 30,
+        renown: (extendedPlayerResources.renownDelta || 0) / 30,
+        followers: (extendedPlayerResources.followersDelta || 0) / 30
       });
     }, intervalTime);
     return () => clearInterval(interval);
-  }, [gameSpeed, advanceDate, updateResources]);
+  }, [gameSpeed, advanceDate, updateResources, tickCooldowns, extendedPlayerResources.goldDelta, extendedPlayerResources.prestigeDelta, extendedPlayerResources.pietyDelta, extendedPlayerResources.renownDelta, extendedPlayerResources.followersDelta]);
 
   return {
     isStarted,
@@ -130,24 +169,24 @@ export function useGameState() {
     activeModal,
     openModal,
     closeModal,
-    traits: uiTraits, // Prioritize UI traits with icons for now
+    uiTraits,
     makeDecision,
     heraldInfo,
     heraldStats,
+    computedHeraldStats,
+    traits,
+    unlockedSkills,
+    abilityCooldowns,
     divineBalance,
     notifications,
     blessProvince,
-    investigate
-    playerResources,
-    heraldStats,
-    computedHeraldStats,
-    traits,
-    activeModal,
-    openModal,
-    closeModal,
-    makeDecision,
+    investigate,
     setStat,
     addTrait,
-    removeTrait
+    removeTrait,
+    unlockSkill,
+    startCooldown,
+    castAbility,
+    updateResources
   };
 }
