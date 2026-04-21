@@ -1,4 +1,7 @@
 import { MapData, BaronyData } from '../map/types';
+import type { HeraldStats, Trait } from '../ruler/state';
+
+export type { HeraldStats, Trait };
 
 export interface GameResources {
   gold: number;
