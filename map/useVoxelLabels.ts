@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import * as THREE from 'three';
 import { MapData, ViewLevel } from './types';
-import { createLabelMesh } from './labelUtils';
+import { createLabelMesh, updateLabelsCollision } from './labelUtils';
 
 export function useVoxelLabels(scene: THREE.Scene | null, mapData: MapData, viewLevel: ViewLevel) {
     const labelGroupRef = useRef<THREE.Group | null>(null);
@@ -36,10 +36,10 @@ export function useVoxelLabels(scene: THREE.Scene | null, mapData: MapData, view
                     e.id,
                     e.x,
                     e.z,
-                    0,
+                    e.rotation || 0,
                     voxel?.height || 1,
                     '#ffffff',
-                    100 // Area placeholder
+                    e.area || 100
                 );
                 group.add(mesh);
             });
@@ -59,20 +59,10 @@ export function useVoxelLabels(scene: THREE.Scene | null, mapData: MapData, view
         };
     }, [scene, mapData]);
 
-    // Visibility Update
+    // Visibility & Collision Update
     const updateLabels = useCallback(() => {
         if (!labelGroupRef.current) return;
-        labelGroupRef.current.children.forEach(child => {
-            const mesh = child as THREE.Mesh;
-            const mat = mesh.material as THREE.MeshBasicMaterial;
-            if (mesh.userData.level === viewLevel) {
-                mesh.visible = true;
-                mat.opacity = 1;
-            } else {
-                mesh.visible = false;
-                mat.opacity = 0;
-            }
-        });
+        updateLabelsCollision(labelGroupRef.current, viewLevel);
     }, [viewLevel]);
 
     return { updateLabels, labelGroupRef };

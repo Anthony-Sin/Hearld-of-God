@@ -1,66 +1,94 @@
-import { MapData, BaronyData } from '@map/mapGenerator';
-import { motion } from 'motion/react';
-import { Shield, Map as MapIcon, Users, Landmark, TrendingUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { User, Shield, Zap, Globe } from 'lucide-react';
+import { BaronyData, MapData } from '../../lib/mapGenerator';
 
-export default function ProvinceDetail({ selectedProvince, mapData, onDeselect, voxelCount }: {
-  selectedProvince: BaronyData | null,
-  mapData: MapData,
-  onDeselect: () => void,
-  voxelCount: number
-}) {
-  if (!selectedProvince) return null;
-
-  // Retrieve hierarchy info
-  const county = mapData.counties[selectedProvince.countyId];
-  const duchy = mapData.duchies[selectedProvince.duchyId];
-  const kingdom = mapData.kingdoms[selectedProvince.kingdomId];
-
-  return (
-    <motion.div
-      initial={{ x: 20, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ x: 20, opacity: 0 }}
-      className="flex flex-col items-end gap-4"
-    >
-      {/* Title / Header */}
-      <div className="flex flex-col items-end">
-        <h2 className="text-2xl font-black text-white tracking-widest uppercase flex items-center gap-3">
-          <span className="w-2 h-8 bg-amber-500/80" />
-          {selectedProvince.name}
-        </h2>
-        <div className="flex gap-2 mt-1">
-          <span className="text-[9px] font-bold text-amber-500/60 tracking-[0.2em] uppercase">
-            {kingdom?.name} • {duchy?.name} • {county?.name}
-          </span>
-        </div>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-2 w-64">
-        <StatItem icon={<TrendingUp size={10} />} label="Development" value={selectedProvince.development} color="text-sky-400" />
-        <StatItem icon={<Shield size={10} />} label="Garrison" value={Math.floor(selectedProvince.development * 45)} color="text-rose-400" />
-        <StatItem icon={<Landmark size={10} />} label="Tax Rate" value={`${(selectedProvince.development * 0.1).toFixed(1)}%`} color="text-emerald-400" />
-        <StatItem icon={<Users size={10} />} label="Supply" value="100%" color="text-amber-400" />
-      </div>
-
-      <button
-        onClick={onDeselect}
-        className="text-[9px] font-bold tracking-[0.3em] uppercase text-white/20 hover:text-white/60 transition-colors mt-2"
-      >
-        [ Close Record ]
-      </button>
-    </motion.div>
-  );
+interface ProvinceDetailProps {
+  selectedProvince: BaronyData | null;
+  mapData: MapData;
+  onDeselect: () => void;
+  voxelCount: number;
 }
 
-function StatItem({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string | number, color: string }) {
+export default function ProvinceDetail({ selectedProvince, mapData, onDeselect, voxelCount }: ProvinceDetailProps) {
+  const baronyCount = mapData.baronies.length;
+
+  const county = selectedProvince ? mapData.counties[selectedProvince.countyId] : null;
+  const duchy = selectedProvince ? mapData.duchies[selectedProvince.duchyId] : null;
+  const kingdom = selectedProvince ? mapData.kingdoms[selectedProvince.kingdomId] : null;
+  const empire = selectedProvince ? mapData.empires[selectedProvince.empireId] : null;
+
   return (
-    <div className="bg-black/60 backdrop-blur-md border border-white/5 p-3 flex flex-col items-start gap-1">
-      <div className="flex items-center gap-1.5">
-        <span className="text-white/20">{icon}</span>
-        <span className="text-[8px] font-bold text-white/30 uppercase tracking-tighter">{label}</span>
+    <div className="text-right flex flex-col gap-4 pointer-events-auto scale-90 origin-top-right">
+      <div className="flex flex-col gap-0.5">
+        <span className="hud-label text-[10px] tracking-[0.2em] uppercase text-white/40">Voxel Count</span>
+        <span className="text-white uppercase text-xs font-bold">{voxelCount.toLocaleString()} BLOCKS</span>
       </div>
-      <span className={`text-sm font-black ${color} tracking-wider font-mono`}>{value}</span>
+      <div className="flex flex-col gap-0.5">
+        <span className="hud-label text-[10px] tracking-[0.2em] uppercase text-white/40">Domain Scope</span>
+        <span className="text-white font-bold uppercase text-xs">{baronyCount} BARONIES</span>
+      </div>
+
+      <AnimatePresence>
+        {selectedProvince && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="mt-4 p-4 bg-black/80 backdrop-blur-md border border-white/10 flex flex-col gap-4 text-left min-w-[260px] shadow-2xl"
+          >
+            <div className="flex flex-col gap-1 border-b border-white/5 pb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: selectedProvince.color }} />
+                <h2 className="text-sm font-black text-white uppercase italic">{selectedProvince.name}</h2>
+              </div>
+              <span className="text-[9px] text-amber-500 font-bold uppercase tracking-widest bg-amber-500/10 px-2 py-0.5 rounded-sm inline-block w-fit">
+                Sovereign Province
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-2 bg-white/5 p-3 rounded-sm border border-white/5">
+                <div className="flex justify-between items-center text-[10px]">
+                    <span className="text-white/40 uppercase">Overlord</span>
+                    <span className="text-white font-bold" style={{ color: empire?.color }}>{empire?.name}</span>
+                </div>
+                <div className="flex justify-between items-center text-[10px]">
+                    <span className="text-white/40 uppercase">Viceroyalty</span>
+                    <span className="text-white font-bold" style={{ color: kingdom?.color }}>{kingdom?.name}</span>
+                </div>
+                <div className="flex justify-between items-center text-[10px]">
+                    <span className="text-white/40 uppercase">Duchy (Empire View)</span>
+                    <span className="text-white font-bold" style={{ color: duchy?.color }}>{duchy?.name}</span>
+                </div>
+                <div className="flex justify-between items-center text-[10px]">
+                    <span className="text-white/40 uppercase">County (Local View)</span>
+                    <span className="text-white font-bold" style={{ color: county?.color }}>{county?.name}</span>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-0.5">
+                <span className="hud-label text-[8px] flex items-center gap-1 opacity-50"><User size={8} /> Culture</span>
+                <span className="text-[10px] font-medium text-white line-clamp-1">{selectedProvince.culture}</span>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="hud-label text-[8px] flex items-center gap-1 opacity-50"><Shield size={8} /> Religion</span>
+                <span className="text-[10px] font-medium text-white line-clamp-1">{selectedProvince.religion}</span>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="hud-label text-[8px] flex items-center gap-1 opacity-50"><Zap size={8} /> Dev Level</span>
+                <span className="text-[10px] font-medium text-white">{selectedProvince.development}</span>
+              </div>
+            </div>
+
+            <button
+              onClick={onDeselect}
+              className="w-full py-1.5 bg-white/5 hover:bg-white/10 text-[9px] uppercase tracking-widest transition-colors border border-white/10 text-white/40 font-bold"
+            >
+              Zoom out
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
