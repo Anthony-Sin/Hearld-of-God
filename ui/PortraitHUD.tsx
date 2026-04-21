@@ -132,12 +132,13 @@ export default function PortraitHUD({
         </div>
 
         {/* Anchor Action Tray */}
-        <div className="absolute -bottom-6 left-[30px] right-0 flex items-center justify-center gap-2 z-40">
+        <div className="absolute -bottom-6 left-[30px] right-0 flex items-center justify-center gap-2 z-[60]">
           <motion.button 
             whileHover={{ scale: 1.1, y: -4 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => onAction?.('military')} 
             className="w-11 h-11 rounded-full bg-[#1a0505] border-2 border-red-900/60 flex items-center justify-center text-red-500 shadow-[0_10px_20px_rgba(0,0,0,0.6)] hover:bg-red-950/40 hover:border-red-500/50 transition-all group"
+            title="Military Operations"
           >
             <Sword size={18} className="group-hover:rotate-12 transition-transform" />
           </motion.button>
@@ -147,9 +148,20 @@ export default function PortraitHUD({
             whileTap={{ scale: 0.95 }}
             onClick={() => onAction?.('character')} 
             className="w-16 h-16 rounded-full bg-gradient-to-b from-[#1a1a1a] to-[#050505] border-4 border-[#5c3a21] flex items-center justify-center text-white shadow-[0_15px_30px_rgba(0,0,0,0.8),inset_0_2px_10px_rgba(255,255,255,0.1)] z-10 relative group"
+            title="Herald Character Sheet"
           >
             <div className="absolute inset-0 rounded-full bg-amber-500/10 blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
             <User size={28} className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" />
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.1, y: -4 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => onAction?.('decisions')}
+            className="w-11 h-11 rounded-full bg-[#051a1a] border-2 border-sky-900/60 flex items-center justify-center text-sky-400 shadow-[0_10px_20px_rgba(0,0,0,0.6)] hover:bg-sky-950/40 hover:border-sky-500/50 transition-all group"
+            title="Divine Mandates"
+          >
+            <Sparkles size={18} className="group-hover:rotate-12 transition-transform" />
           </motion.button>
           
           <motion.button 
@@ -157,6 +169,7 @@ export default function PortraitHUD({
             whileTap={{ scale: 0.9 }}
             onClick={() => onAction?.('council')} 
             className="w-11 h-11 rounded-full bg-[#1a1505] border-2 border-amber-900/60 flex items-center justify-center text-amber-500 shadow-[0_10px_20px_rgba(0,0,0,0.6)] hover:bg-amber-950/40 hover:border-amber-500/50 transition-all group"
+            title="Royal Council"
           >
             <Scroll size={18} className="group-hover:-rotate-12 transition-transform" />
           </motion.button>
@@ -182,7 +195,7 @@ export default function PortraitHUD({
         </div>
 
         {/* Coat of Arms (Banner) */}
-        <div className="absolute bottom-8 -right-4 w-16 h-24 bg-[#0a0a0a] border-4 border-[#3b2313] flex flex-col items-center justify-start p-1.5 shadow-[0_15px_35px_rgba(0,0,0,0.9)] z-50 transform rotate-2">
+        <div className="absolute bottom-8 -right-4 w-16 h-24 bg-[#0a0a0a] border-4 border-[#3b2313] flex flex-col items-center justify-start p-1.5 shadow-[0_15px_35px_rgba(0,0,0,0.9)] z-50 transform rotate-2 pointer-events-none">
            <div className="w-full h-2 bg-gradient-to-r from-amber-700 via-amber-400 to-amber-700 mb-1.5 shadow-sm" />
            <div className="w-full flex-1 relative overflow-hidden rounded-sm ring-1 ring-black/50"
                 style={{ 

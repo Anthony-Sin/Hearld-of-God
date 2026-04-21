@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
+import { HERALD_SKILL_TREE } from './skills';
 
 export interface HeraldStats {
   // Mortal Stats
@@ -180,6 +181,7 @@ export function useRulerState() {
 
   const computedStats = useMemo(() => {
     const base = { ...stats };
+    // Add trait modifiers
     traitIds.forEach(id => {
       const trait = TRAITS[id];
       if (trait) {
@@ -189,8 +191,18 @@ export function useRulerState() {
         });
       }
     });
+    // Add skill modifiers (Passive bonuses from skill tree)
+    unlockedSkills.forEach(skillId => {
+      const skill = HERALD_SKILL_TREE.find((s) => s.id === skillId);
+      if (skill?.statModifiers) {
+        Object.entries(skill.statModifiers).forEach(([stat, mod]) => {
+          const key = stat as keyof HeraldStats;
+          base[key] += (mod as number) || 0;
+        });
+      }
+    });
     return base;
-  }, [stats, traitIds]);
+  }, [stats, traitIds, unlockedSkills]);
 
   const updateResources = useCallback((delta: Record<string, number>) => {
     if (delta.gold !== undefined || delta.followers !== undefined) {
@@ -202,6 +214,14 @@ export function useRulerState() {
 
     setStats(prev => {
       const next = { ...prev };
+      // Base stats
+      if (delta.authority !== undefined) next.authority += delta.authority;
+      if (delta.zeal !== undefined) next.zeal += delta.zeal;
+      if (delta.cunning !== undefined) next.cunning += delta.cunning;
+      if (delta.valor !== undefined) next.valor += delta.valor;
+      if (delta.wisdom !== undefined) next.wisdom += delta.wisdom;
+
+      // Resources/Divine stats
       if (delta.piety !== undefined) next.piety = Math.max(0, next.piety + delta.piety);
       if (delta.renown !== undefined) next.renown = Math.max(0, next.renown + delta.renown);
       if (delta.divinity !== undefined) next.divinity = Math.max(0, Math.min(100, next.divinity + delta.divinity));
