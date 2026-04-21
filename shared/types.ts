@@ -1,15 +1,55 @@
 import { MapData, BaronyData, Biome, MapMode, LODLevel } from '../map/types';
 
 export type { Biome, MapMode, LODLevel };
+import { MapData, BaronyData } from '../map/types';
+import type { HeraldStats, Trait } from '../ruler/state';
+
+export type { HeraldStats, Trait };
 
 export interface GameResources {
   gold: number;
   prestige: number;
   piety: number;
   renown: number;
+  goldDelta?: number;
+  prestigeDelta?: number;
+  pietyDelta?: number;
+  renownDelta?: number;
 }
 
-export type ActiveModal = 'character' | 'military' | 'council' | 'decisions' | null;
+export interface HeraldStats {
+  authority: number;
+  zeal: number;
+  cunning: number;
+  valor: number;
+  wisdom: number;
+}
+
+export interface RulerTrait {
+  id: string;
+  name: string;
+  description: string;
+  effects: Partial<GameResources>;
+  lucideIcon: string;
+}
+
+export interface DivineBalance {
+  divinity: number;
+  corruption: number;
+}
+
+export interface HeraldInfo {
+  name: string;
+  title: string;
+}
+
+export interface ExtendedBaronyData extends BaronyData {
+  infrastructure?: number;
+  military?: number;
+  arcane?: number;
+}
+
+export type ActiveModal = 'character' | 'military' | 'council' | 'decisions' | 'settings' | null;
 
 export interface SharedState {
   isStarted: boolean;
@@ -17,8 +57,15 @@ export interface SharedState {
   gameSpeed: number;
   currentDate: Date;
   playerResources: GameResources;
+  heraldStats: HeraldStats;
+  computedHeraldStats: HeraldStats;
+  traits: Trait[];
   selectedProvinceId: number | null;
   mapData: MapData;
   selectedProvince: BaronyData | null;
   activeModal: ActiveModal;
+  heraldStats: HeraldStats;
+  divineBalance: DivineBalance;
+  heraldInfo: HeraldInfo;
+  traits: RulerTrait[];
 }

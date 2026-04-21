@@ -16,7 +16,13 @@ export function useGameState() {
     activeModal,
     openModal,
     closeModal,
-    advanceDate
+    advanceDate,
+    heraldInfo,
+    heraldStats,
+    divineBalance,
+    traits: uiTraits,
+    notifications,
+    addNotification
   } = useUIState();
 
   const {
@@ -36,9 +42,25 @@ export function useGameState() {
   const {
     playerResources,
     updateResources,
-    traits,
+    traits: rulerTraits,
     makeDecision
+    stats: heraldStats,
+    computedStats: computedHeraldStats,
+    traits,
+    makeDecision,
+    setStat,
+    addTrait,
+    removeTrait
   } = useRulerState();
+
+  // Combine resources with deltas (calculated based on realm size and stats)
+  const extendedPlayerResources = {
+    ...playerResources,
+    goldDelta: Number((1.5 + mapData.baronies.length * 0.02).toFixed(1)),
+    prestigeDelta: Number((2.0 + heraldStats.authority * 0.5).toFixed(1)),
+    pietyDelta: Number((0.5 + heraldStats.zeal * 0.8).toFixed(1)),
+    renownDelta: Number((0.2 + mapData.empires.length * 0.1).toFixed(1))
+  };
 
   const startGame = useCallback(() => {
     const newSeed = Math.floor(Math.random() * 1000000);
@@ -55,6 +77,21 @@ export function useGameState() {
       setIsGenerating(false);
     }, 100);
   }, [setIsGenerating, setSelectedProvinceId]);
+
+  const blessProvince = useCallback((provinceId: number) => {
+    if (playerResources.piety >= 50) {
+      updateResources({ piety: -50 });
+      addNotification(`Province ${provinceId} has been blessed!`, 'success');
+      console.log(`Blessing province ${provinceId}`);
+    } else {
+      addNotification(`Not enough piety to bless province!`, 'error');
+    }
+  }, [playerResources.piety, updateResources, addNotification]);
+
+  const investigate = useCallback((provinceId: number) => {
+    addNotification(`Investigation launched in province ${provinceId}.`, 'info');
+    console.log(`Investigating province ${provinceId}`);
+  }, [addNotification]);
 
   // Global Tick Logic
   useEffect(() => {
@@ -89,11 +126,28 @@ export function useGameState() {
     gameSpeed,
     setGameSpeed,
     currentDate,
-    playerResources,
+    playerResources: extendedPlayerResources,
     activeModal,
     openModal,
     closeModal,
+    traits: uiTraits, // Prioritize UI traits with icons for now
+    makeDecision,
+    heraldInfo,
+    heraldStats,
+    divineBalance,
+    notifications,
+    blessProvince,
+    investigate
+    playerResources,
+    heraldStats,
+    computedHeraldStats,
     traits,
-    makeDecision
+    activeModal,
+    openModal,
+    closeModal,
+    makeDecision,
+    setStat,
+    addTrait,
+    removeTrait
   };
 }
