@@ -40,6 +40,13 @@ export function useGameState() {
     updateResources,
     traits: rulerTraits,
     makeDecision
+    stats: heraldStats,
+    computedStats: computedHeraldStats,
+    traits,
+    makeDecision,
+    setStat,
+    addTrait,
+    removeTrait
   } = useRulerState();
 
   // Combine resources with deltas (calculated based on realm size and stats)
@@ -123,5 +130,16 @@ export function useGameState() {
     notifications,
     blessProvince,
     investigate
+    playerResources,
+    heraldStats,
+    computedHeraldStats,
+    traits,
+    activeModal,
+    openModal,
+    closeModal,
+    makeDecision,
+    setStat,
+    addTrait,
+    removeTrait
   };
 }

@@ -1,4 +1,7 @@
 import { MapData, BaronyData } from '../map/types';
+import type { HeraldStats, Trait } from '../ruler/state';
+
+export type { HeraldStats, Trait };
 
 export interface GameResources {
   gold: number;
@@ -51,6 +54,9 @@ export interface SharedState {
   gameSpeed: number;
   currentDate: Date;
   playerResources: GameResources;
+  heraldStats: HeraldStats;
+  computedHeraldStats: HeraldStats;
+  traits: Trait[];
   selectedProvinceId: number | null;
   mapData: MapData;
   selectedProvince: BaronyData | null;

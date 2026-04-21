@@ -1,44 +1,200 @@
-import { useState, useCallback, useEffect } from 'react';
-import { GameResources } from '../shared/types';
+import { useState, useCallback, useMemo } from 'react';
 
-export interface RulerTrait {
-  id: string;
-  name: string;
-  description: string;
-  effects: Partial<GameResources>;
+export interface HeraldStats {
+  // Mortal Stats
+  authority: number;
+  zeal: number;
+  cunning: number;
+  valor: number;
+  wisdom: number;
+  // Divine Stats
+  divinity: number;
+  corruption: number;
+  renown: number;
+  piety: number;
 }
 
+export type TraitCategory = 'divine' | 'mortal' | 'physical';
+
+export interface Trait {
+  id: string;
+  name: string;
+  category: TraitCategory;
+  description: string;
+  statModifiers: Partial<HeraldStats>;
+}
+
+export const TRAITS: Record<string, Trait> = {
+  'chosen_one': {
+    id: 'chosen_one',
+    name: 'Chosen One',
+    category: 'divine',
+    description: 'Marked by the divine for a great purpose. +10 divinity cap, unique golden glow on portrait.',
+    statModifiers: { divinity: 10 } // Assuming +10 to current divinity for now, or we handle cap separately
+  },
+  'fallen': {
+    id: 'fallen',
+    name: 'Fallen',
+    category: 'divine',
+    description: 'The divine light has dimmed. Corruption cannot be reduced below 20.',
+    statModifiers: { corruption: 10 }
+  },
+  'miracle_worker': {
+    id: 'miracle_worker',
+    name: 'Miracle Worker',
+    category: 'divine',
+    description: 'A conduit for miracles. Piety generation +25%.',
+    statModifiers: {}
+  },
+  'voice_of_god': {
+    id: 'voice_of_god',
+    name: 'Voice of God',
+    category: 'divine',
+    description: 'The Herald speaks with the authority of the heavens. Authority +2.',
+    statModifiers: { authority: 2 }
+  },
+  'brilliant': {
+    id: 'brilliant',
+    name: 'Brilliant',
+    category: 'mortal',
+    description: 'A mind like a diamond. +3 Wisdom, portrait shows a glowing halo.',
+    statModifiers: { wisdom: 3 }
+  },
+  'wrathful': {
+    id: 'wrathful',
+    name: 'Wrathful',
+    category: 'mortal',
+    description: 'Quick to anger, slow to forgive. +2 Valor, -1 Authority.',
+    statModifiers: { valor: 2, authority: -1 }
+  },
+  'schemer': {
+    id: 'schemer',
+    name: 'Schemer',
+    category: 'mortal',
+    description: 'A master of shadows and whispers. +3 Cunning, -1 Zeal.',
+    statModifiers: { cunning: 3, zeal: -1 }
+  },
+  'just': {
+    id: 'just',
+    name: 'Just',
+    category: 'mortal',
+    description: 'Fair and impartial. +2 Authority, +1 Zeal.',
+    statModifiers: { authority: 2, zeal: 1 }
+  },
+  'craven': {
+    id: 'craven',
+    name: 'Craven',
+    category: 'mortal',
+    description: 'Fear is a constant companion. -2 Valor, portrait changes posture.',
+    statModifiers: { valor: -2 }
+  },
+  'ancient': {
+    id: 'ancient',
+    name: 'Ancient',
+    category: 'physical',
+    description: 'Weathered by centuries. Appears aged with grey tones.',
+    statModifiers: { wisdom: 1 }
+  },
+  'towering': {
+    id: 'towering',
+    name: 'Towering',
+    category: 'physical',
+    description: 'A physical giant among men. Model is taller and wider.',
+    statModifiers: { valor: 1 }
+  },
+  'scarred': {
+    id: 'scarred',
+    name: 'Scarred',
+    category: 'physical',
+    description: 'The body bears the marks of many trials. Small dark voxels on face/body.',
+    statModifiers: { valor: 1 }
+  }
+};
+
 export function useRulerState() {
-  const [playerResources, setPlayerResources] = useState<GameResources>({
-    gold: 240,
-    prestige: 150,
-    piety: 80,
-    renown: 20
+  const [stats, setStats] = useState<HeraldStats>({
+    authority: 8,
+    zeal: 8,
+    cunning: 8,
+    valor: 8,
+    wisdom: 8,
+    divinity: 40,
+    corruption: 10,
+    renown: 0,
+    piety: 50
   });
 
-  const [traits, setTraits] = useState<RulerTrait[]>([
-    { id: 'ambitious', name: 'Ambitious', description: 'Always seeking more power.', effects: { prestige: 0.1 } }
-  ]);
+  const [traitIds, setTraitIds] = useState<string[]>(['just', 'chosen_one']);
 
-  const updateResources = useCallback((delta: Partial<GameResources>) => {
-    setPlayerResources(prev => ({
-      gold: +(prev.gold + (delta.gold || 0)).toFixed(1),
-      prestige: +(prev.prestige + (delta.prestige || 0)).toFixed(2),
-      piety: +(prev.piety + (delta.piety || 0)).toFixed(2),
-      renown: +(prev.renown + (delta.renown || 0)).toFixed(3)
-    }));
+  const addTrait = useCallback((traitId: string) => {
+    setTraitIds(prev => prev.includes(traitId) ? prev : [...prev, traitId]);
   }, []);
 
-  // Placeholder for AI behavior or decision logic
+  const removeTrait = useCallback((traitId: string) => {
+    setTraitIds(prev => prev.filter(id => id !== traitId));
+  }, []);
+
+  const setStat = useCallback((stat: keyof HeraldStats, value: number) => {
+    setStats(prev => {
+      let newValue = value;
+      // Handle special logic like Fallen trait
+      if (stat === 'corruption' && traitIds.includes('fallen')) {
+        newValue = Math.max(20, value);
+      }
+      // Clamp stats as appropriate
+      if (['divinity', 'corruption'].includes(stat)) {
+        newValue = Math.max(0, Math.min(100, newValue));
+      }
+
+      return { ...prev, [stat]: newValue };
+    });
+  }, [traitIds]);
+
+  const computedStats = useMemo(() => {
+    const base = { ...stats };
+    traitIds.forEach(id => {
+      const trait = TRAITS[id];
+      if (trait) {
+        Object.entries(trait.statModifiers).forEach(([stat, mod]) => {
+          const key = stat as keyof HeraldStats;
+          base[key] += mod || 0;
+        });
+      }
+    });
+    return base;
+  }, [stats, traitIds]);
+
+  const updateResources = useCallback((delta: Record<string, number>) => {
+    setStats(prev => {
+      const next = { ...prev };
+      if (delta.gold !== undefined) { /* Herald doesn't use gold? Or maybe it does. Context says gold is in GameResources. */ }
+      if (delta.piety !== undefined) next.piety += delta.piety;
+      if (delta.renown !== undefined) next.renown += delta.renown;
+      if (delta.prestige !== undefined) next.renown += delta.prestige; // Map prestige to renown
+      return next;
+    });
+  }, []);
+
   const makeDecision = useCallback((decisionId: string) => {
-    console.log(`Ruler making decision: ${decisionId}`);
+    console.log(`Herald making decision: ${decisionId}`);
   }, []);
 
   return {
-    playerResources,
-    setPlayerResources,
+    stats,
+    computedStats,
+    traitIds,
+    traits: traitIds.map(id => TRAITS[id]).filter(Boolean),
+    addTrait,
+    removeTrait,
+    setStat,
     updateResources,
-    traits,
-    makeDecision
+    makeDecision,
+    // Maintaining these names for compatibility if needed, but updating them to use new stats
+    playerResources: {
+      gold: 0,
+      prestige: computedStats.renown,
+      piety: computedStats.piety,
+      renown: computedStats.renown
+    }
   };
 }

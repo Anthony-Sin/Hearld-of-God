@@ -31,6 +31,9 @@ export default function App() {
     setGameSpeed,
     currentDate,
     playerResources,
+    heraldStats,
+    computedHeraldStats,
+    traits,
     activeModal,
     openModal,
     closeModal,
@@ -83,6 +86,10 @@ export default function App() {
               domainScope={mapData.baronies.length}
               onSettingsClick={() => openModal('settings')}
             />
+            {/* Top Bar Resources (Moved to float top-left-ish) */}
+            <div className="absolute top-6 left-12 h-10 pointer-events-auto z-40">
+              <TopBar stats={computedHeraldStats} />
+            </div>
 
             {/* Province Detail Panel (Slide-in Right) */}
             <ProvinceDetail
@@ -102,6 +109,8 @@ export default function App() {
               traits={traits}
               divineBalance={divineBalance}
               onAction={openModal}
+              heraldStats={computedHeraldStats}
+              traits={traits}
             />
 
             {/* Bottom Right HUD (Game Speed & Map Modes) */}
@@ -157,6 +166,8 @@ export default function App() {
               activeModal={activeModal} 
               closeModal={closeModal} 
               selectedProvinceName={selectedProvince?.name}
+              heraldStats={computedHeraldStats}
+              traits={traits}
             />
           </motion.div>
         )}
