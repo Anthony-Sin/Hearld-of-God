@@ -10,6 +10,9 @@ export function useGameState() {
 
   const {
     isStarted,
+    isCreating,
+    startCreation,
+    cancelCreation,
     startGame: startUI,
     gameSpeed,
     setGameSpeed,
@@ -41,6 +44,7 @@ export function useGameState() {
   const {
     stats: heraldStats,
     computedStats: computedHeraldStats,
+    traitIds,
     traits,
     unlockedSkills,
     abilityCooldowns,
@@ -50,6 +54,7 @@ export function useGameState() {
     removeTrait,
     updateResources,
     unlockSkill,
+    initializeHerald,
     startCooldown,
     tickCooldowns,
     playerResources
@@ -58,18 +63,19 @@ export function useGameState() {
   // Combine resources with deltas (calculated based on realm size and stats)
   const extendedPlayerResources = {
     ...playerResources,
-    goldDelta: Number((1.5 + mapData.baronies.length * 0.02).toFixed(1)),
-    prestigeDelta: Number((2.0 + computedHeraldStats.authority * 0.5).toFixed(1)),
-    pietyDelta: Number((0.5 + computedHeraldStats.zeal * 0.8).toFixed(1)),
-    renownDelta: Number((0.2 + mapData.empires.length * 0.1).toFixed(1)),
-    followersDelta: Number((0.1 + computedHeraldStats.zeal * 0.2).toFixed(1))
+    goldDelta: Number((5.0 + mapData.baronies.length * 0.5).toFixed(1)),
+    prestigeDelta: Number((1.0 + computedHeraldStats.authority * 0.2).toFixed(1)),
+    pietyDelta: Number((2.0 + computedHeraldStats.zeal * 0.4).toFixed(1)),
+    renownDelta: Number((0.1 + mapData.empires.length * 0.2).toFixed(1)),
+    followersDelta: Number((0.5 + computedHeraldStats.zeal * 0.5).toFixed(1))
   };
 
-  const startGame = useCallback(() => {
+  const startGame = useCallback((info: { name: string, title: string, traits: string[] }) => {
     const newSeed = Math.floor(Math.random() * 1000000);
     setSeed(newSeed);
-    startUI();
-  }, [startUI]);
+    initializeHerald(info.traits);
+    startUI({ name: info.name, title: info.title });
+  }, [startUI, initializeHerald]);
 
   const regenerate = useCallback(() => {
     setIsGenerating(true);
@@ -95,6 +101,23 @@ export function useGameState() {
     addNotification(`Investigation launched in province ${provinceId}.`, 'info');
     console.log(`Investigating province ${provinceId}`);
   }, [addNotification]);
+
+  // Milestones
+  useEffect(() => {
+    if (!isStarted) return;
+
+    const milestoneThresholds = [100, 500, 1000, 5000];
+    milestoneThresholds.forEach(threshold => {
+      // Use a simple local storage or state to track reached milestones if needed,
+      // but for now we just notify when crossing the threshold.
+      // This is slightly naive as it might trigger again on load,
+      // but fine for a session-based game.
+      if (playerResources.followers >= threshold && (playerResources.followers - (extendedPlayerResources.followersDelta || 0) / 30) < threshold) {
+        addNotification(`Divine Milestone Reached: ${threshold} Followers! The heavens smile upon you.`, 'success');
+        updateResources({ piety: 100, renown: 10 });
+      }
+    });
+  }, [playerResources.followers, isStarted, addNotification, updateResources, extendedPlayerResources.followersDelta]);
 
   const castAbility = useCallback((abilityId: string) => {
     const ability = (HERALD_ABILITIES as any)[abilityId];
@@ -150,6 +173,9 @@ export function useGameState() {
 
   return {
     isStarted,
+    isCreating,
+    startCreation,
+    cancelCreation,
     startGame,
     seed,
     regenerate,

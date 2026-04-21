@@ -64,10 +64,42 @@ export default function ActionModals({
       { label: 'Spymaster', value: 'The Shadow' }
     ],
     decisions: [
-      { label: 'Manifest Holy Presence', cost: '120 Piety', gain: '+15 Divinity', color: 'bg-amber-500/10 border-amber-500/30 text-amber-400', desc: 'Briefly tear the veil between worlds to inspire the faithful.' },
-      { label: 'Sacramental Purge', cost: '80 Piety', gain: '-20 Corruption', color: 'bg-purple-500/10 border-purple-500/30 text-purple-400', desc: 'Cleanse your mortal vessel through intense ritualistic suffering.' },
-      { label: 'Writ of Condemnation', cost: '150 Piety', gain: '+25 Authority', color: 'bg-red-500/10 border-red-500/30 text-red-500', desc: 'Formally cast out a political rival from the grace of the heavens.' },
-      { label: 'Seek Arcane Visions', cost: '50 Piety', gain: '+5 Wisdom', color: 'bg-sky-500/10 border-sky-500/30 text-sky-400', desc: 'Meditate upon the ancient scrolls to unlock hidden truths.' }
+      {
+        label: 'Sacred Procession',
+        cost: '100 Piety',
+        gain: '+50 Followers',
+        desc: 'Lead a grand march through the capital to gather the faithful.',
+        color: 'bg-amber-500/10 border-amber-500/30 text-amber-400',
+        action: () => updateResources({ piety: -100, followers: 50 }),
+        canAfford: (resources.piety || 0) >= 100
+      },
+      {
+        label: 'Commission Holy Relic',
+        cost: '500 Gold',
+        gain: '+100 Followers, +5 Renown',
+        desc: 'Craft a masterwork of faith to draw pilgrims from across the realm.',
+        color: 'bg-sky-500/10 border-sky-500/30 text-sky-400',
+        action: () => updateResources({ gold: -500, followers: 100, renown: 5 }),
+        canAfford: (resources.gold || 0) >= 500
+      },
+      {
+        label: 'Zealous Inquisitions',
+        cost: '50 Piety',
+        gain: '+10 Authority, +5 Corruption',
+        desc: 'Purge the heretics to tighten your grip on the faithful.',
+        color: 'bg-red-500/10 border-red-500/30 text-red-500',
+        action: () => updateResources({ piety: -50, authority: 10, corruption: 5 }),
+        canAfford: (resources.piety || 0) >= 50
+      },
+      {
+        label: 'Alms for the Poor',
+        cost: '200 Gold',
+        gain: '+30 Followers, -5 Corruption',
+        desc: 'Distribute wealth to the needy to show the divine\'s mercy.',
+        color: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
+        action: () => updateResources({ gold: -200, followers: 30, corruption: -5 }),
+        canAfford: (resources.gold || 0) >= 200
+      }
     ],
     settings: [
       { label: 'Music Volume', value: '80%' },
@@ -292,16 +324,22 @@ export default function ActionModals({
                   </div>
                   <div className="flex flex-col gap-4">
                     {menuItems.decisions.map((item, i) => (
-                      <button key={i} className={`flex flex-col p-6 border transition-all group relative overflow-hidden bg-black/40 hover:bg-white/[0.02] hover:translate-x-1 ${item.color}`}>
+                      <button
+                        key={i}
+                        onClick={() => item.canAfford && item.action()}
+                        disabled={!item.canAfford}
+                        className={`flex flex-col p-6 border transition-all group relative overflow-hidden bg-black/40 ${item.canAfford ? 'hover:bg-white/[0.02] hover:translate-x-1 cursor-pointer' : 'opacity-50 cursor-not-allowed'} ${item.color}`}
+                      >
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm font-black uppercase tracking-[0.2em] italic font-serif">{item.label}</span>
                           <div className="flex items-center gap-3">
                              <span className="text-[10px] font-black uppercase opacity-60 tracking-widest">{item.gain}</span>
                              <div className="h-4 w-[1px] bg-white/10" />
-                             <span className="text-[10px] font-black uppercase px-3 py-1 bg-black/60 border border-white/10 rounded-sm">{item.cost}</span>
+                             <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-sm border ${item.canAfford ? 'bg-black/60 border-white/10' : 'bg-stone-800 border-transparent text-stone-500'}`}>{item.cost}</span>
                           </div>
                         </div>
                         <p className="text-[10px] text-white/40 leading-relaxed max-w-[80%] text-left">{item.desc}</p>
+                        {!item.canAfford && <span className="text-[8px] font-bold text-red-500 uppercase mt-2">Cannot Afford</span>}
                         <div className="absolute bottom-0 right-0 p-2 opacity-0 group-hover:opacity-20 transition-opacity">
                           <Scroll size={40} />
                         </div>

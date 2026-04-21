@@ -29,8 +29,8 @@ export const TRAITS: Record<string, Trait> = {
     id: 'chosen_one',
     name: 'Chosen One',
     category: 'divine',
-    description: 'Marked by the divine for a great purpose. +10 divinity cap, unique golden glow on portrait.',
-    statModifiers: { divinity: 10 } // Assuming +10 to current divinity for now, or we handle cap separately
+    description: 'Marked by the divine for a great purpose. +10 Divinity, +2 Zeal.',
+    statModifiers: { divinity: 10, zeal: 2 }
   },
   'fallen': {
     id: 'fallen',
@@ -57,8 +57,8 @@ export const TRAITS: Record<string, Trait> = {
     id: 'brilliant',
     name: 'Brilliant',
     category: 'mortal',
-    description: 'A mind like a diamond. +3 Wisdom, portrait shows a glowing halo.',
-    statModifiers: { wisdom: 3 }
+    description: 'A mind like a diamond. +3 Wisdom, +1 Cunning.',
+    statModifiers: { wisdom: 3, cunning: 1 }
   },
   'wrathful': {
     id: 'wrathful',
@@ -78,8 +78,8 @@ export const TRAITS: Record<string, Trait> = {
     id: 'just',
     name: 'Just',
     category: 'mortal',
-    description: 'Fair and impartial. +2 Authority, +1 Zeal.',
-    statModifiers: { authority: 2, zeal: 1 }
+    description: 'Fair and impartial. +2 Authority, +1 Zeal, -1 Cunning.',
+    statModifiers: { authority: 2, zeal: 1, cunning: -1 }
   },
   'craven': {
     id: 'craven',
@@ -130,6 +130,27 @@ export function useRulerState() {
   });
 
   const [traitIds, setTraitIds] = useState<string[]>(['just', 'chosen_one']);
+
+  const initializeHerald = useCallback((startingTraits: string[]) => {
+    setTraitIds(startingTraits);
+    setStats({
+      authority: 8,
+      zeal: 8,
+      cunning: 8,
+      valor: 8,
+      wisdom: 8,
+      divinity: 40,
+      corruption: 10,
+      renown: 0,
+      piety: 50
+    });
+    setResources({
+      gold: 150,
+      followers: 10
+    });
+    setUnlockedSkills([]);
+    setAbilityCooldowns({});
+  }, []);
   const [unlockedSkills, setUnlockedSkills] = useState<string[]>([]);
   const [abilityCooldowns, setAbilityCooldowns] = useState<Record<string, number>>({});
 
@@ -224,6 +245,7 @@ export function useRulerState() {
     setStat,
     updateResources,
     unlockSkill,
+    initializeHerald,
     startCooldown,
     tickCooldowns,
     makeDecision,

@@ -9,12 +9,13 @@ export interface Notification {
 
 export function useUIState() {
   const [isStarted, setIsStarted] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [gameSpeed, setGameSpeed] = useState(0);
   const [currentDate, setCurrentDate] = useState(new Date(1066, 0, 1));
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
 
   // Herald & Divine UI specific info (Can be moved to ruler state if needed)
-  const [heraldInfo] = useState<HeraldInfo>({
+  const [heraldInfo, setHeraldInfo] = useState<HeraldInfo>({
     name: 'Heralda the Radiant',
     title: 'Herald of the Silver Flame'
   });
@@ -32,7 +33,17 @@ export function useUIState() {
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const startGame = useCallback(() => {
+  const startCreation = useCallback(() => {
+    setIsCreating(true);
+  }, []);
+
+  const cancelCreation = useCallback(() => {
+    setIsCreating(false);
+  }, []);
+
+  const startGame = useCallback((info: HeraldInfo) => {
+    setHeraldInfo(info);
+    setIsCreating(false);
     setIsStarted(true);
     setGameSpeed(1);
   }, []);
@@ -63,6 +74,9 @@ export function useUIState() {
 
   return {
     isStarted,
+    isCreating,
+    startCreation,
+    cancelCreation,
     startGame,
     gameSpeed,
     setGameSpeed,

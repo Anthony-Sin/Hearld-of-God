@@ -7,6 +7,7 @@ import { useGameState } from '@shared/useGameState';
 
 // Components
 import VoxelMap from '@map/VoxelMap';
+import CharacterCreator from './CharacterCreator.tsx';
 import TopBar from './TopBar.tsx';
 import PortraitHUD from './PortraitHUD.tsx';
 import ProvinceDetail from './ProvinceDetail.tsx';
@@ -20,6 +21,9 @@ import { MAP_WIDTH, MAP_DEPTH, SYMBOL_ICONS } from '@shared/constants';
 export default function App() {
   const {
     isStarted,
+    isCreating,
+    startCreation,
+    cancelCreation,
     startGame,
     isGenerating,
     regenerate,
@@ -58,7 +62,8 @@ export default function App() {
 
   return (
     <div className="relative w-full h-screen bg-[#0f0f0f] font-sans text-[#e0e0e0] overflow-hidden">
-      {!isStarted && <StartMenu onStart={startGame} />}
+      {!isStarted && !isCreating && <StartMenu onStart={startCreation} />}
+      {isCreating && <CharacterCreator onComplete={startGame} onCancel={cancelCreation} />}
 
       {/* 3D Map Viewport */}
       <VoxelMap 
