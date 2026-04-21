@@ -90,16 +90,24 @@ export const updateLabelsCollision = (labelGroup: THREE.Group, level: ViewLevel,
         const mesh = child as LabelMesh;
         const mat = mesh.material as THREE.MeshBasicMaterial;
         
-        // Custom fading logic based on camera distance and level
+        // CK3 Style: Exclusive tiers. As you zoom in, higher tiers vanish.
         let targetOpacity = 0;
         if (mesh.userData.level === 'Empire') {
-            targetOpacity = dist > 60 ? 1 : Math.max(0, (dist - 40) / 20);
+            // Empires are visible from far away, start fading out as we enter Kingdom view
+            targetOpacity = dist > 200 ? 1 : dist < 120 ? 0 : (dist - 120) / 80;
         } else if (mesh.userData.level === 'Kingdom') {
-            targetOpacity = dist > 40 && dist < 150 ? 1 : dist >= 150 ? Math.max(0, 1 - (dist - 150) / 30) : Math.max(0, (dist - 30) / 10);
+            // Kingdoms visible in middle distances
+            if (dist > 150) targetOpacity = Math.max(0, 1 - (dist - 150) / 100);
+            else if (dist < 80) targetOpacity = 0;
+            else targetOpacity = (dist - 80) / 70;
         } else if (mesh.userData.level === 'Duchy') {
-            targetOpacity = dist > 25 && dist < 100 ? 1 : dist >= 100 ? Math.max(0, 1 - (dist - 100) / 20) : Math.max(0, (dist - 20) / 5);
+            // Duchies visible as we zoom into region
+            if (dist > 100) targetOpacity = 0;
+            else if (dist < 40) targetOpacity = 0;
+            else targetOpacity = (dist - 40) / 60;
         } else if (mesh.userData.level === 'County') {
-            targetOpacity = dist < 60 ? 1 : Math.max(0, 1 - (dist - 60) / 10);
+            // Counties visible only when zoomed in close
+            targetOpacity = dist < 60 ? 1 : Math.max(0, 1 - (dist - 60) / 40);
         }
 
         mat.opacity = THREE.MathUtils.lerp(mat.opacity, targetOpacity, 0.1);

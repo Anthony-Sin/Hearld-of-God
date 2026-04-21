@@ -126,7 +126,9 @@ export class MapHierarchyBuilder {
             gold: Math.floor(this.random() * 100),
             prestige: Math.floor(this.random() * 100),
             piety: Math.floor(this.random() * 100),
-            renown: Math.floor(this.random() * 100)
+            renown: Math.floor(this.random() * 100),
+            followerCount: 0,
+            maxFollowers: 0
         };
     });
 

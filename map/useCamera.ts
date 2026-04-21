@@ -24,7 +24,7 @@ export function useCamera({ width, depth, domElement }: CameraConfig) {
     );
     
     // Position camera to view the entire board isometric-ally
-    const camOffset = Math.max(width, depth) * 1.0; // Moved closer as requested
+    const camOffset = Math.max(width, depth) * 1.5; // Start further out to see Empires
     newCamera.position.set(camOffset, camOffset * 0.8, camOffset);
     newCamera.lookAt(width / 2, 0, depth / 2);
     setCamera(newCamera);
@@ -32,15 +32,15 @@ export function useCamera({ width, depth, domElement }: CameraConfig) {
     // 2. Setup Controls
     const newControls = new OrbitControls(newCamera, domElement);
     newControls.enableDamping = true;
-    newControls.dampingFactor = 0.08; // Slightly more damped for smoother flow
-    newControls.rotateSpeed = 1.2; // Faster rotation as requested
-    newControls.zoomSpeed = 1.2;
+    newControls.dampingFactor = 0.1; // Smoother flow
+    newControls.rotateSpeed = 0.8; // More controlled rotation
+    newControls.zoomSpeed = 1.5; // Faster zoom for responsiveness
     newControls.panSpeed = 1.0;
     newControls.screenSpacePanning = true; 
-    newControls.listenToKeyEvents(window); // Enable keyboard support
-    newControls.keyPanSpeed = 20.0; // Faster keyboard panning as requested
-    newControls.minDistance = 10;
-    newControls.maxDistance = camOffset * 2.0; // Adjusted max distance
+    newControls.listenToKeyEvents(window);
+    newControls.keyPanSpeed = 30.0;
+    newControls.minDistance = 20; // Prevent clipping into terrain
+    newControls.maxDistance = camOffset * 2.5;
     newControls.maxPolarAngle = Math.PI / 2.1; 
     newControls.target.set(width / 2, 0, depth / 2);
     setControls(newControls);

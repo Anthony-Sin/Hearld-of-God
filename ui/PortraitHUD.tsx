@@ -93,7 +93,7 @@ export default function PortraitHUD({
         </div>
 
         {/* Active Abilities Bar */}
-        <div className="absolute -right-32 top-1/2 -translate-y-1/2 flex flex-col gap-2">
+        <div className="absolute -right-36 top-1/2 -translate-y-1/2 flex flex-col gap-2">
           {HERALD_SKILL_TREE.filter(n => n.abilityId && unlockedSkills.includes(n.id)).map(node => {
             const ability = (HERALD_ABILITIES as any)[node.abilityId!];
             const cooldown = abilityCooldowns[ability.id] || 0;
