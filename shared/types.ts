@@ -18,6 +18,9 @@ export interface SharedState {
   gameSpeed: number;
   currentDate: Date;
   playerResources: GameResources;
+  heraldStats: HeraldStats;
+  computedHeraldStats: HeraldStats;
+  traits: Trait[];
   selectedProvinceId: number | null;
   mapData: MapData;
   selectedProvince: BaronyData | null;

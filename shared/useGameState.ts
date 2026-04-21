@@ -32,8 +32,13 @@ export function useGameState() {
   const {
     playerResources,
     updateResources,
+    stats: heraldStats,
+    computedStats: computedHeraldStats,
     traits,
-    makeDecision
+    makeDecision,
+    setStat,
+    addTrait,
+    removeTrait
   } = useRulerState();
 
   const startGame = useCallback(() => {
@@ -82,10 +87,15 @@ export function useGameState() {
     setGameSpeed,
     currentDate,
     playerResources,
+    heraldStats,
+    computedHeraldStats,
+    traits,
     activeModal,
     openModal,
     closeModal,
-    traits,
-    makeDecision
+    makeDecision,
+    setStat,
+    addTrait,
+    removeTrait
   };
 }

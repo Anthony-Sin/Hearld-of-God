@@ -30,13 +30,13 @@ export interface HeraldStats {
 The Herald can possess various traits that modify their stats and visual appearance:
 
 **Divine Traits**
-- `Chosen One`: +10 divinity, golden halo effect.
+- `Chosen One`: +10 divinity, golden halo effect, divine glow tint.
 - `Fallen`: Corruption cannot be reduced below 20.
 - `Miracle Worker`: +25% Piety generation.
 - `Voice of God`: +2 Authority.
 
 **Mortal Traits**
-- `Brilliant`: +3 Wisdom, golden halo effect.
+- `Brilliant`: +3 Wisdom, golden halo effect, divine glow tint.
 - `Wrathful`: +2 Valor, -1 Authority.
 - `Schemer`: +3 Cunning, -1 Zeal.
 - `Just`: +2 Authority, +1 Zeal.
@@ -49,13 +49,20 @@ The Herald can possess various traits that modify their stats and visual appeara
 
 ### Portrait Dynamics
 The `VoxelCharacter` component updates in real-time based on the Herald's state:
-- **Divinity**: Above 70 (or `Brilliant`/`Chosen One` trait) adds a golden particle halo. Below 30 applies programmatic desaturation.
+- **Divinity**: Above 70 (or `Brilliant`/`Chosen One` trait) adds a golden particle halo and a light glow tint. Below 30 applies programmatic desaturation.
 - **Corruption**: Above 70 adds dark/purple smoke at the feet and causes purple "bleed" on outer voxels.
 - **Renown Milestones**:
-  - 100: Golden Crown
-  - 250: Substantial Cloak
-  - 500: Glowing Orb in hand
+  - 100: Ornate Golden Crown
+  - 250: Full Cloak and Golden Pauldrons
+  - 500: Multi-colored Divine Orb in hand
 - **Physical Traits**: `Ancient` (desaturation), `Towering` (scaling), `Scarred` (damage marks), `Craven` (posture shift).
+
+## UI Integration
+The Herald system is fully integrated into the game UI:
+- **Top Bar**: Displays Divinity, Corruption, Piety, and Renown with themed progress bars and icons.
+- **Portrait HUD**: Displays Mortal Stats (Authority, Zeal, etc.) with tooltips and high-contrast labels.
+- **Character Sheet (Action Modal)**: Shows a detailed breakdown of Mortal Attributes and a list of Active Traits with descriptions.
+- **Divine Mandates (Action Modal)**: Themed interface for spending Piety on miracles and political actions.
 
 ## Interface
 - Exports `VoxelCharacter` component for rendering the Herald.

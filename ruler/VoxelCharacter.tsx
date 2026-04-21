@@ -1,11 +1,13 @@
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { BaronyData } from '@map/mapGenerator.ts';
 import { rendererPool } from '@shared/threeSingleton';
-import { useRulerState } from './state';
+import { HeraldStats } from '@shared/types';
 
 interface VoxelCharacterProps {
   provinceData: BaronyData | null;
+  stats: HeraldStats;
+  traitIds: string[];
 }
 
 function createCircleTexture(color: string) {
@@ -24,8 +26,7 @@ function createCircleTexture(color: string) {
   return texture;
 }
 
-export default function VoxelCharacter({ provinceData }: VoxelCharacterProps) {
-  const { computedStats, traitIds } = useRulerState();
+export default function VoxelCharacter({ provinceData, stats, traitIds }: VoxelCharacterProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
@@ -117,7 +118,7 @@ export default function VoxelCharacter({ provinceData }: VoxelCharacterProps) {
 
       renderer.render(scene, camera);
     };
-    requestAnimationFrame(animate);
+    frameId = requestAnimationFrame(animate);
 
     const handleResize = () => {
       if (!containerRef.current) return;
@@ -133,7 +134,7 @@ export default function VoxelCharacter({ provinceData }: VoxelCharacterProps) {
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(frameId);
       scene.clear();
-      // We don't dispose the renderer as it's a shared singleton
+      // We don't remove renderer.domElement here because rendererPool handles reuse
     };
   }, []);
 
@@ -181,34 +182,40 @@ export default function VoxelCharacter({ provinceData }: VoxelCharacterProps) {
     fillBlock(-3, 3, 26, 27, 4, 5, c_beard);
 
     // Renown Milestones
-    if (computedStats.renown >= 100) {
+    if (stats.renown >= 100) {
       // Crown
       const cy = 32;
-      fillBlock(-4, 4, cy, cy+1, 4, 4, c_gold);
-      fillBlock(-4, 4, cy, cy+1, -4, -4, c_gold);
-      fillBlock(-4, -4, cy, cy+1, -3, 3, c_gold);
-      fillBlock( 4, 4, cy, cy+1, -3, 3, c_gold);
-      fillBlock( 0, 0, cy+2, cy+4, 4, 4, c_gold);
+      fillBlock(-4, 4, cy, cy, 4, 4, c_gold);
+      fillBlock(-4, 4, cy, cy, -4, -4, c_gold);
+      fillBlock(-4, -4, cy, cy, -3, 3, c_gold);
+      fillBlock( 4, 4, cy, cy, -3, 3, c_gold);
+      addV(-4, cy+1, 4, c_gold); addV(4, cy+1, 4, c_gold);
+      addV(-4, cy+1, -4, c_gold); addV(4, cy+1, -4, c_gold);
+      fillBlock( 0, 0, cy+1, cy+3, 4, 4, c_gold);
     }
 
-    if (computedStats.renown >= 250) {
-      // Cloak (Already partially there, let's make it more substantial)
-      fillBlock(-6, 6, 12, 22, -6, -5, c_cape);
-      fillBlock(-6, -5, 12, 22, -5, 4, c_cape);
-      fillBlock( 5, 6, 12, 22, -5, 4, c_cape);
+    if (stats.renown >= 250) {
+      // Cloak
+      fillBlock(-6, 6, 12, 23, -6, -5, c_cape);
+      fillBlock(-7, -6, 12, 23, -5, 4, c_cape);
+      fillBlock( 6, 7, 12, 23, -5, 4, c_cape);
+      fillBlock(-8, -5, 21, 23, -2, 2, c_gold);
+      fillBlock( 5, 8, 21, 23, -2, 2, c_gold);
     }
 
-    if (computedStats.renown >= 500) {
-      // Glowing Orb in hand
-      fillBlock(6, 8, 18, 20, 2, 4, new THREE.Color(0x00ffff));
+    if (stats.renown >= 500) {
+      // Divine Orb
+      fillBlock(7, 9, 18, 20, 2, 4, new THREE.Color(0x00ffff));
+      addV(8, 21, 3, new THREE.Color(0xffffff));
+      addV(8, 17, 3, new THREE.Color(0xffffff));
     }
 
     const voxels = Array.from(voxelMap.values()) as any[];
 
     // Visibility of particles
     if (particlesRef.current) {
-      particlesRef.current.halo.visible = computedStats.divinity > 70 || traitIds.includes('brilliant');
-      particlesRef.current.smoke.visible = computedStats.corruption > 70;
+      particlesRef.current.halo.visible = stats.divinity > 70 || traitIds.includes('brilliant') || traitIds.includes('chosen_one');
+      particlesRef.current.smoke.visible = stats.corruption > 70;
     }
 
     const geometry = new THREE.BoxGeometry(1, 1, 1);
@@ -221,21 +228,21 @@ export default function VoxelCharacter({ provinceData }: VoxelCharacterProps) {
     const isTowering = traitIds.includes('towering');
     const isScarred = traitIds.includes('scarred');
     const isCraven = traitIds.includes('craven');
+    const isChosen = traitIds.includes('chosen_one');
+    const isBrilliant = traitIds.includes('brilliant');
 
-    const desaturation = Math.max(0, isAncient ? 0.5 : 0, computedStats.divinity < 30 ? (30 - computedStats.divinity) / 30 : 0);
-    const corruptionLevel = computedStats.corruption > 70 ? (computedStats.corruption - 70) / 30 : 0;
+    const desaturation = Math.max(0, isAncient ? 0.5 : 0, stats.divinity < 30 ? (30 - stats.divinity) / 30 : 0);
+    const corruptionLevel = stats.corruption > 70 ? (stats.corruption - 70) / 30 : 0;
 
     const dummy = new THREE.Object3D();
     voxels.forEach((v, i) => {
       let finalColor = v.color.clone();
 
-      // Apply desaturation
       if (desaturation > 0) {
         const gray = (finalColor.r + finalColor.g + finalColor.b) / 3;
         finalColor.lerp(new THREE.Color(gray, gray, gray), desaturation);
       }
 
-      // Apply corruption bleed to outer voxels
       if (corruptionLevel > 0) {
         const isOuter = Math.abs(v.x) >= 4 || Math.abs(v.z) >= 4;
         if (isOuter) {
@@ -243,26 +250,30 @@ export default function VoxelCharacter({ provinceData }: VoxelCharacterProps) {
         }
       }
 
-      // Scarred trait (deterministic based on position to avoid flicker)
+      if (isChosen || isBrilliant) {
+        finalColor.lerp(new THREE.Color(0xfff5d7), 0.15);
+      }
+
       const voxelSeed = (v.x * 73856093) ^ (v.y * 19349663) ^ (v.z * 83492791);
       const pseudoRandom = (Math.abs(voxelSeed) % 1000) / 1000;
       if (isScarred && pseudoRandom < 0.05 && v.y > 23) {
         finalColor.multiplyScalar(0.3);
       }
 
-      dummy.position.set(v.x, v.y, v.z);
-
-      // Towering trait
       let sx = 0.98;
       let sy = 0.98;
       let sz = 0.98;
+      let px = v.x;
+      let py = v.y;
+      let pz = v.z;
+
       if (isTowering) {
-        sx *= 1.1;
-        sy *= 1.15;
-        sz *= 1.1;
+        sx *= 1.1; sy *= 1.15; sz *= 1.1;
+        px *= 1.1; py *= 1.15; pz *= 1.1;
       }
 
-      // Craven posture and coloring
+      dummy.position.set(px, py, pz);
+
       if (isCraven && v.y > 20) {
         dummy.position.z += (v.y - 20) * 0.1;
         dummy.position.y -= (v.y - 20) * 0.05;
@@ -277,7 +288,7 @@ export default function VoxelCharacter({ provinceData }: VoxelCharacterProps) {
 
     scene.add(instancedMesh);
     instancedMeshRef.current = instancedMesh;
-  }, [provinceData, computedStats, traitIds]);
+  }, [provinceData, stats, traitIds]);
 
   return (
     <div ref={containerRef} className="w-full h-full pointer-events-none" />

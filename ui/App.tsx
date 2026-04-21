@@ -31,6 +31,9 @@ export default function App() {
     setGameSpeed,
     currentDate,
     playerResources,
+    heraldStats,
+    computedHeraldStats,
+    traits,
     activeModal,
     openModal,
     closeModal,
@@ -68,7 +71,7 @@ export default function App() {
           >
             {/* Top Bar Resources (Moved to float top-left-ish) */}
             <div className="absolute top-6 left-12 h-10 pointer-events-auto z-40">
-              <TopBar resources={playerResources} />
+              <TopBar stats={computedHeraldStats} />
             </div>
 
             {/* Top Right Stats & Selected Province */}
