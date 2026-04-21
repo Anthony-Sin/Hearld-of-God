@@ -68,7 +68,7 @@ export function useBorders(scene: THREE.Scene | null, mapData: MapData, lodLevel
                 color: new THREE.Color(color),
                 transparent: true,
                 opacity: opacity,
-                linewidth: linewidth // Note: linewidth is usually 1 in most browsers due to WebGL limitations
+                linewidth: linewidth
             });
             const line = new THREE.LineSegments(geometry, material);
             if (glow) {
@@ -89,17 +89,26 @@ export function useBorders(scene: THREE.Scene | null, mapData: MapData, lodLevel
         // Barony Borders (Thin)
         const baronyEdges = findEdges(id => id);
         const baronyBorders = createBorderMesh(baronyEdges, '#ffffff', 1, 0.1);
-        if (baronyBorders) group.add(baronyBorders);
+        if (baronyBorders) {
+            baronyBorders.name = 'barony_borders';
+            group.add(baronyBorders);
+        }
 
         // County Borders (Medium)
         const countyEdges = findEdges(id => mapData.baronies[id]?.countyId);
         const countyBorders = createBorderMesh(countyEdges, '#ffffff', 2, 0.3);
-        if (countyBorders) group.add(countyBorders);
+        if (countyBorders) {
+            countyBorders.name = 'county_borders';
+            group.add(countyBorders);
+        }
 
         // Duchy + Kingdom + Empire Borders (Thick Glowing)
         const empireEdges = findEdges(id => mapData.baronies[id]?.empireId);
         const empireBorders = createBorderMesh(empireEdges, '#ffcc00', 3, 0.8, true);
-        if (empireBorders) group.add(empireBorders);
+        if (empireBorders) {
+            empireBorders.name = 'empire_borders';
+            group.add(empireBorders);
+        }
 
         scene.add(group);
 
@@ -112,11 +121,14 @@ export function useBorders(scene: THREE.Scene | null, mapData: MapData, lodLevel
     useEffect(() => {
         if (!bordersGroupRef.current) return;
 
-        // children[0] = barony, [1] = county, [2,3] = empire/glow
-        const children = bordersGroupRef.current.children;
-        if (children.length >= 1) children[0].visible = (lodLevel === 'barony');
-        if (children.length >= 2) children[1].visible = (lodLevel === 'barony' || lodLevel === 'county');
-        for (let i = 2; i < children.length; i++) children[i].visible = true; // High level always visible
+        const group = bordersGroupRef.current;
+        const barony = group.getObjectByName('barony_borders');
+        const county = group.getObjectByName('county_borders');
+        const empire = group.getObjectByName('empire_borders');
+
+        if (barony) barony.visible = (lodLevel === 'barony');
+        if (county) county.visible = (lodLevel === 'barony' || lodLevel === 'county');
+        // Empire and its glow are always visible
     }, [lodLevel]);
 
     return { bordersGroupRef };
