@@ -26,7 +26,9 @@ export const createLabelMesh = (
     rotation: number, 
     terrainHeight: number, 
     color: string, 
-    area: number
+    area: number,
+    isVertical: boolean = false,
+    constrainedScale: number = 1.0
 ) => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d')!;
@@ -35,27 +37,40 @@ export const createLabelMesh = (
     ctx.font = `900 ${baseFontSize}px "Cinzel", serif`;
     
     const textWidth = ctx.measureText(text).width;
-    canvas.width = textWidth + 120;
-    canvas.height = baseFontSize + 120;
+
+    if (isVertical) {
+        canvas.width = baseFontSize + 120;
+        canvas.height = textWidth + 120;
+    } else {
+        canvas.width = textWidth + 120;
+        canvas.height = baseFontSize + 120;
+    }
 
     ctx.font = `900 ${baseFontSize}px "Cinzel", serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    if (isVertical) {
+        ctx.rotate(Math.PI / 2);
+    }
+
     ctx.lineJoin = 'round';
     ctx.strokeStyle = 'rgba(0,0,0,1)';
     ctx.lineWidth = 18;
-    ctx.strokeText(text, canvas.width / 2, canvas.height / 2);
+    ctx.strokeText(text, 0, 0);
     
     ctx.fillStyle = '#ffffff'; 
-    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+    ctx.fillText(text, 0, 0);
+    ctx.restore();
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.anisotropy = 8;
     
     const areaScale = Math.sqrt(area) * 0.015; 
     const levelBase = level === 'Empire' ? 4.0 : level === 'Kingdom' ? 2.5 : level === 'Duchy' ? 1.5 : level === 'County' ? 0.8 : 0.6;
-    const finalBaseScale = levelBase * areaScale;
+    const finalBaseScale = levelBase * areaScale * constrainedScale;
 
     const planeGeo = new THREE.PlaneGeometry(canvas.width * 0.05, canvas.height * 0.05);
     const planeMat = new THREE.MeshBasicMaterial({ 
@@ -90,16 +105,24 @@ export const updateLabelsCollision = (labelGroup: THREE.Group, level: ViewLevel,
         const mesh = child as LabelMesh;
         const mat = mesh.material as THREE.MeshBasicMaterial;
         
-        // Custom fading logic based on camera distance and level
+        // CK3 Style: Exclusive tiers. As you zoom in, higher tiers vanish.
         let targetOpacity = 0;
         if (mesh.userData.level === 'Empire') {
-            targetOpacity = dist > 60 ? 1 : Math.max(0, (dist - 40) / 20);
+            // Empires are visible from far away, start fading out as we enter Kingdom view
+            targetOpacity = dist > 200 ? 1 : dist < 120 ? 0 : (dist - 120) / 80;
         } else if (mesh.userData.level === 'Kingdom') {
-            targetOpacity = dist > 40 && dist < 150 ? 1 : dist >= 150 ? Math.max(0, 1 - (dist - 150) / 30) : Math.max(0, (dist - 30) / 10);
+            // Kingdoms visible in middle distances
+            if (dist > 150) targetOpacity = Math.max(0, 1 - (dist - 150) / 100);
+            else if (dist < 80) targetOpacity = 0;
+            else targetOpacity = (dist - 80) / 70;
         } else if (mesh.userData.level === 'Duchy') {
-            targetOpacity = dist > 25 && dist < 100 ? 1 : dist >= 100 ? Math.max(0, 1 - (dist - 100) / 20) : Math.max(0, (dist - 20) / 5);
+            // Duchies visible as we zoom into region
+            if (dist > 100) targetOpacity = 0;
+            else if (dist < 40) targetOpacity = 0;
+            else targetOpacity = (dist - 40) / 60;
         } else if (mesh.userData.level === 'County') {
-            targetOpacity = dist < 60 ? 1 : Math.max(0, 1 - (dist - 60) / 10);
+            // Counties visible only when zoomed in close
+            targetOpacity = dist < 60 ? 1 : Math.max(0, 1 - (dist - 60) / 40);
         }
 
         mat.opacity = THREE.MathUtils.lerp(mat.opacity, targetOpacity, 0.1);

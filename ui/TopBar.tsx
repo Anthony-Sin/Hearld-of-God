@@ -1,10 +1,9 @@
 import { Coins, Star, Hash, Trophy, Settings, Users, Database, Sparkles, Skull, Flame, Heart } from 'lucide-react';
 import { motion } from 'motion/react';
-import { GameResources, DivineBalance, HeraldInfo, HeraldStats } from '../shared/types';
+import { GameResources, HeraldInfo, HeraldStats } from '../shared/types';
 
 interface TopBarProps {
   resources: GameResources;
-  divineBalance: DivineBalance;
   heraldInfo: HeraldInfo;
   currentDate: Date;
   voxelCount: number;
@@ -15,7 +14,6 @@ interface TopBarProps {
 
 export default function TopBar({
   resources,
-  divineBalance,
   heraldInfo,
   currentDate,
   voxelCount,
@@ -33,8 +31,8 @@ export default function TopBar({
     return `${day} ${month} ${year} AD`;
   };
 
-  const resourceItem = (icon: any, label: string, value: number, delta: number | undefined, color: string) => (
-    <div className="flex items-center gap-2 px-3 border-r border-amber-900/20 last:border-r-0 group cursor-help" title={label}>
+  const resourceItem = (icon: any, label: string, value: number, delta: number | undefined, color: string, tooltip?: string) => (
+    <div className="flex items-center gap-2 px-3 border-r border-amber-900/20 last:border-r-0 group cursor-help" title={tooltip || label}>
       <div className={`${color}`}>{icon}</div>
       <div className="flex flex-col">
         <span className="text-xs font-bold text-stone-200 leading-none">{Math.floor(value)}</span>
@@ -59,7 +57,7 @@ export default function TopBar({
     >
       {/* Left Cluster: Resources */}
       <div className="flex items-center h-full">
-        {resourceItem(<Coins size={16} />, "Gold", resources.gold, resources.goldDelta, "text-amber-400")}
+        {resourceItem(<Coins size={16} />, "Gold", resources.gold, resources.goldDelta, "text-amber-400", "Gold from Follower Donations")}
         {resourceItem(<Heart size={16} />, "Followers", resources.followers, resources.followersDelta, "text-rose-500")}
         {resourceItem(<Hash size={16} />, "Piety", resources.piety, resources.pietyDelta, "text-stone-300")}
         {resourceItem(<Trophy size={16} />, "Renown", resources.renown, resources.renownDelta, "text-rose-400")}

@@ -46,8 +46,6 @@ export default function App() {
     openModal,
     closeModal,
     heraldInfo,
-    divineBalance,
-    uiTraits,
     notifications,
     blessProvince,
     investigate,
@@ -94,7 +92,6 @@ export default function App() {
             {/* Top Bar Resources (Full Width Fixed) */}
             <TopBar
               resources={playerResources}
-              divineBalance={divineBalance}
               heraldInfo={heraldInfo}
               currentDate={currentDate}
               voxelCount={mapData.voxels.length}
@@ -121,7 +118,6 @@ export default function App() {
               heraldInfo={heraldInfo}
               heraldStats={computedHeraldStats}
               traits={traits}
-              divineBalance={divineBalance}
               onAction={openModal}
               SYMBOL_ICONS={SYMBOL_ICONS}
               unlockedSkills={unlockedSkills}
@@ -153,10 +149,10 @@ export default function App() {
                     Terrain
                   </button>
                   <button
-                    onClick={() => setMapMode('culture')}
-                    className={`px-3 py-1 border transition-all text-[9px] font-bold uppercase ${mapMode === 'culture' ? 'bg-purple-500/20 border-purple-500/50 text-purple-400' : 'bg-black/60 border-white/10 text-white/30'}`}
+                    onClick={() => setMapMode('followers')}
+                    className={`px-3 py-1 border transition-all text-[9px] font-bold uppercase ${mapMode === 'followers' ? 'bg-amber-500/20 border-amber-500/50 text-amber-400' : 'bg-black/60 border-white/10 text-white/30'}`}
                   >
-                    Culture
+                    Followers
                   </button>
                 </div>
                 <button

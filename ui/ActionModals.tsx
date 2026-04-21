@@ -99,6 +99,15 @@ export default function ActionModals({
         color: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
         action: () => updateResources({ gold: -200, followers: 30, corruption: -5 }),
         canAfford: (resources.gold || 0) >= 200
+      },
+      {
+        label: 'Holy Tithe',
+        cost: '50 Piety',
+        gain: 'Gold from Donations',
+        desc: 'Enforce a one-time holy tax on all followers across the realm.',
+        color: 'bg-amber-600/10 border-amber-500/30 text-amber-500',
+        action: () => updateResources({ piety: -50, gold: resources.followers * 2 }),
+        canAfford: (resources.piety || 0) >= 50
       }
     ],
     settings: [

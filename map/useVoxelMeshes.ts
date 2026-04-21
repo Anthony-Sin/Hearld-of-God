@@ -13,10 +13,11 @@ function hashString(str: string) {
     return Math.abs(hash);
 }
 
-function getCultureColor(culture: string) {
-    const hash = hashString(culture);
-    const hue = hash % 360;
-    return `hsl(${hue}, 60%, 50%)`;
+function getFollowerColor(count: number, max: number) {
+    const ratio = count / max;
+    const base = new THREE.Color('#1a1a1a');
+    const gold = new THREE.Color('#ffcc00');
+    return base.lerp(gold, ratio);
 }
 
 const LAND_BASE_COLOR = new THREE.Color('#a1c181');
@@ -70,10 +71,10 @@ export function useVoxelMeshes(mapData: MapData) {
                 } else {
                     tempColor.set(LAND_BASE_COLOR);
                 }
-            } else if (mapMode === 'culture') {
+            } else if (mapMode === 'followers') {
                 const barony = mapData.baronies[v.provinceId];
                 if (barony) {
-                    tempColor.set(getCultureColor(barony.culture));
+                    tempColor.copy(getFollowerColor(barony.followerCount, barony.maxFollowers));
                 } else {
                     tempColor.set(LAND_BASE_COLOR);
                 }

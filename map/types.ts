@@ -2,7 +2,7 @@ export type TerrainType = 'land' | 'water' | 'deep_water' | 'mountain' | 'hill' 
 
 export type Biome = 'plains' | 'forest' | 'desert' | 'tundra' | 'mountain' | 'wetlands';
 
-export type MapMode = 'political' | 'terrain' | 'culture';
+export type MapMode = 'political' | 'terrain' | 'followers';
 
 export type LODLevel = 'empire' | 'duchy' | 'county' | 'barony';
 
@@ -52,6 +52,8 @@ export interface BaronyData {
   prestige: number;
   piety: number;
   renown: number;
+  followerCount: number;
+  maxFollowers: number;
 }
 
 export interface MapHierarchy {

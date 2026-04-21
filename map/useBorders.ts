@@ -48,7 +48,8 @@ export function useBorders(scene: THREE.Scene | null, mapData: MapData, lodLevel
                             const nv = mapData.voxels[nIdx];
                             const nLevelId = nv.provinceId !== -1 ? getLevelId(nv.provinceId) : -1;
 
-                            if (currentLevelId !== nLevelId) {
+                            // Only draw borders between two valid provinces (no land-to-water borders)
+                            if (nv.provinceId !== -1 && currentLevelId !== nLevelId) {
                                 // Add edge line
                                 const h = Math.max(v.height, nv.height) + 0.1;
                                 edges.push(n.x1, h, n.z1, n.x2, h, n.z2);
@@ -88,7 +89,7 @@ export function useBorders(scene: THREE.Scene | null, mapData: MapData, lodLevel
 
         // Barony Borders (Thin)
         const baronyEdges = findEdges(id => id);
-        const baronyBorders = createBorderMesh(baronyEdges, '#ffffff', 1, 0.1);
+        const baronyBorders = createBorderMesh(baronyEdges, '#ffffff', 1, 0.08);
         if (baronyBorders) {
             baronyBorders.name = 'barony_borders';
             group.add(baronyBorders);
@@ -96,15 +97,31 @@ export function useBorders(scene: THREE.Scene | null, mapData: MapData, lodLevel
 
         // County Borders (Medium)
         const countyEdges = findEdges(id => mapData.baronies[id]?.countyId);
-        const countyBorders = createBorderMesh(countyEdges, '#ffffff', 2, 0.3);
+        const countyBorders = createBorderMesh(countyEdges, '#ffffff', 2, 0.2);
         if (countyBorders) {
             countyBorders.name = 'county_borders';
             group.add(countyBorders);
         }
 
-        // Duchy + Kingdom + Empire Borders (Thick Glowing)
+        // Duchy Borders
+        const duchyEdges = findEdges(id => mapData.baronies[id]?.duchyId);
+        const duchyBorders = createBorderMesh(duchyEdges, '#ffffff', 2, 0.4);
+        if (duchyBorders) {
+            duchyBorders.name = 'duchy_borders';
+            group.add(duchyBorders);
+        }
+
+        // Kingdom Borders
+        const kingdomEdges = findEdges(id => mapData.baronies[id]?.kingdomId);
+        const kingdomBorders = createBorderMesh(kingdomEdges, '#ffffff', 3, 0.6);
+        if (kingdomBorders) {
+            kingdomBorders.name = 'kingdom_borders';
+            group.add(kingdomBorders);
+        }
+
+        // Empire Borders (Thick Glowing)
         const empireEdges = findEdges(id => mapData.baronies[id]?.empireId);
-        const empireBorders = createBorderMesh(empireEdges, '#ffcc00', 3, 0.8, true);
+        const empireBorders = createBorderMesh(empireEdges, '#ffcc00', 4, 0.8, true);
         if (empireBorders) {
             empireBorders.name = 'empire_borders';
             group.add(empireBorders);
@@ -124,11 +141,17 @@ export function useBorders(scene: THREE.Scene | null, mapData: MapData, lodLevel
         const group = bordersGroupRef.current;
         const barony = group.getObjectByName('barony_borders');
         const county = group.getObjectByName('county_borders');
+        const duchy = group.getObjectByName('duchy_borders');
+        const kingdom = group.getObjectByName('kingdom_borders');
         const empire = group.getObjectByName('empire_borders');
 
+        // Logic for which borders show at which zoom level
         if (barony) barony.visible = (lodLevel === 'barony');
         if (county) county.visible = (lodLevel === 'barony' || lodLevel === 'county');
-        // Empire and its glow are always visible
+        if (duchy) duchy.visible = (lodLevel === 'barony' || lodLevel === 'county' || lodLevel === 'duchy');
+        // Kingdom and Empire are high level and generally visible unless very close
+        if (kingdom) kingdom.visible = true;
+        if (empire) empire.visible = true;
     }, [lodLevel]);
 
     return { bordersGroupRef };

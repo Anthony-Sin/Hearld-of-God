@@ -22,8 +22,6 @@ export function useGameState() {
     closeModal,
     advanceDate,
     heraldInfo,
-    divineBalance,
-    traits: uiTraits,
     notifications,
     addNotification
   } = useUIState();
@@ -63,7 +61,8 @@ export function useGameState() {
   // Combine resources with deltas (calculated based on realm size and stats)
   const extendedPlayerResources = {
     ...playerResources,
-    goldDelta: Number((5.0 + mapData.baronies.length * 0.5).toFixed(1)),
+    // Money is now primarily from donations (Followers * Rate)
+    goldDelta: Number((playerResources.followers * (0.05 + (computedHeraldStats.zeal * 0.01) + (computedHeraldStats.authority * 0.005))).toFixed(1)),
     prestigeDelta: Number((1.0 + computedHeraldStats.authority * 0.2).toFixed(1)),
     pietyDelta: Number((2.0 + computedHeraldStats.zeal * 0.4).toFixed(1)),
     renownDelta: Number((0.1 + mapData.empires.length * 0.2).toFixed(1)),
@@ -195,7 +194,6 @@ export function useGameState() {
     activeModal,
     openModal,
     closeModal,
-    uiTraits,
     makeDecision,
     heraldInfo,
     heraldStats,
@@ -203,7 +201,6 @@ export function useGameState() {
     traits,
     unlockedSkills,
     abilityCooldowns,
-    divineBalance,
     notifications,
     blessProvince,
     investigate,
