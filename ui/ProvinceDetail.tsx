@@ -11,7 +11,7 @@ interface ProvinceDetailProps {
 
 export default function ProvinceDetail({ selectedProvince, mapData, onDeselect, voxelCount }: ProvinceDetailProps) {
   const baronyCount = mapData.baronies.length;
-  
+
   const county = selectedProvince ? mapData.counties[selectedProvince.countyId] : null;
   const duchy = selectedProvince ? mapData.duchies[selectedProvince.duchyId] : null;
   const kingdom = selectedProvince ? mapData.kingdoms[selectedProvince.kingdomId] : null;
@@ -79,8 +79,8 @@ export default function ProvinceDetail({ selectedProvince, mapData, onDeselect, 
                 <span className="text-[10px] font-medium text-white">{selectedProvince.development}</span>
               </div>
             </div>
-            
-            <button 
+
+            <button
               onClick={onDeselect}
               className="w-full py-1.5 bg-white/5 hover:bg-white/10 text-[9px] uppercase tracking-widest transition-colors border border-white/10 text-white/40 font-bold"
             >

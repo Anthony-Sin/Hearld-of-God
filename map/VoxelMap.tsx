@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { MapData } from '../lib/mapGenerator.ts';
-import { useCamera } from '../hooks/useCamera.ts';
-import { rendererPool } from '../lib/threeSingleton';
-import { ViewLevel } from '../lib/map/types';
+import { MapData } from './mapGenerator.ts';
+import { useCamera } from './useCamera.ts';
+import { rendererPool } from '@shared/threeSingleton';
+import { ViewLevel } from './types';
 
 // Modular Hooks
-import { useVoxelScene } from '../hooks/map/useVoxelScene';
-import { useVoxelLabels } from '../hooks/map/useVoxelLabels';
-import { useVoxelMeshes } from '../hooks/map/useVoxelMeshes';
-import { useVoxelPicking } from '../hooks/map/useVoxelPicking';
+import { useVoxelScene } from './useVoxelScene';
+import { useVoxelLabels } from './useVoxelLabels';
+import { useVoxelMeshes } from './useVoxelMeshes';
+import { useVoxelPicking } from './useVoxelPicking';
 
 interface VoxelMapProps {
   mapData: MapData;
@@ -99,7 +99,7 @@ export default function VoxelMap({
       currentDom.removeEventListener('click', clickHandler);
       cancelAnimationFrame(animationId);
     };
-  }, [mapData, camera, controls, handlePick, updateLabels]);
+  }, [mapData, camera, controls, handlePick, updateLabels, width, depth]);
 
   // Handle visual updates for regions
   useEffect(() => {

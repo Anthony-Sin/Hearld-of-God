@@ -11,23 +11,23 @@ export interface GeometryMetadata {
 
 export const calculateEntityGeometry = (voxList: { x: number, z: number }[] | undefined): GeometryMetadata => {
     if (!voxList || voxList.length === 0) return { x: 0, z: 0, rotation: 0, area: 0 };
-    
+
     // Find the largest contiguous cluster (Main Island) using a simple queue-based flood fill
     const clusters: {x:number, z:number}[][] = [];
     const visited = new Set<string>();
-    
+
     voxList.forEach(v => {
         const key = `${v.x},${v.z}`;
         if (visited.has(key)) return;
-        
+
         const cluster: {x:number, z:number}[] = [];
         const queue = [v];
         visited.add(key);
-        
+
         while(queue.length > 0) {
             const curr = queue.shift()!;
             cluster.push(curr);
-            
+
             [[-1,0],[1,0],[0,-1],[0,1]].forEach(([dx, dz]) => {
                 const nx = curr.x + dx;
                 const nz = curr.z + dz;

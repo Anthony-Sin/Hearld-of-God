@@ -1,7 +1,7 @@
-import { MapData, VoxelData, BaronyData, HierarchyEntity } from './map/types';
-import { generateTerrain } from './map/terrain';
-import { buildHierarchy } from './map/hierarchy';
-import { processTerritoryCenters } from './map/geometry';
+import { MapData, VoxelData, BaronyData, HierarchyEntity } from './types';
+import { generateTerrain } from './terrain';
+import { buildHierarchy } from './hierarchy';
+import { processTerritoryCenters } from './geometry';
 
 function mulberry32(a: number) {
   return function() {
@@ -75,4 +75,3 @@ export function generateMap(width: number, depth: number, seed: number): MapData
 }
 
 export type { MapData, BaronyData, VoxelData, HierarchyEntity };
-  

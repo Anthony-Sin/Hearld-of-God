@@ -15,10 +15,12 @@
     "moduleDetection": "force",
     "allowJs": true,
     "jsx": "react-jsx",
+    "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@ui/*": ["ui/*"],
+      "@map/*": ["map/*"],
+      "@ruler/*": ["ruler/*"],
+      "@shared/*": ["shared/*"]
     },
     "allowImportingTsExtensions": true,
     "noEmit": true

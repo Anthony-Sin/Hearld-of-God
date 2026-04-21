@@ -7,6 +7,16 @@ const ROOTS = [
 ];
 const SUFFIXES = ['ia', 'ony', 'land', 'ford', 'burg', 'shire', 'ance', 'os', 'um', 'berg', 'reich', 'mark', 'stan', 'grad'];
 
+export function generateNames(count: number): string[] {
+    const names: string[] = [];
+    for (let i = 0; i < count; i++) {
+        const root = ROOTS[i % ROOTS.length];
+        const suffix = SUFFIXES[i % SUFFIXES.length];
+        names.push(root + suffix);
+    }
+    return names;
+}
+
 export function genName(random: () => number, level: string = 'Barony') {
   const root = ROOTS[Math.floor(random() * ROOTS.length)];
   const suffix = SUFFIXES[Math.floor(random() * SUFFIXES.length)];

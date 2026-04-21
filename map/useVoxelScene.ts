@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { MutableRefObject } from 'react';
 import * as THREE from 'three';
-import { MapData } from '../../lib/map/types';
+import { MapData } from './types';
 
 const TABLE_COLOR = new THREE.Color('#1a1a1a');
 const WATER_COLOR = new THREE.Color('#2b5c7a');
