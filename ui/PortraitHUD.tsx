@@ -2,16 +2,17 @@ import { Shield, Sparkles, Sword, User, Scroll, Crown, Brain, Flame, Zap } from 
 import VoxelCharacter from '@ruler/VoxelCharacter';
 import { BaronyData } from '@map/mapGenerator';
 import { motion } from 'motion/react';
-import { useGameState } from '@shared/useGameState';
+import { HeraldStats, Trait } from '../shared/types';
 
 interface PortraitHUDProps {
   selectedProvince: BaronyData | null;
   onAction?: (action: any) => void;
   SYMBOL_ICONS: Record<string, any>;
+  heraldStats: HeraldStats;
+  traits: Trait[];
 }
 
-export default function PortraitHUD({ selectedProvince, onAction, SYMBOL_ICONS }: PortraitHUDProps) {
-  const { computedHeraldStats, traits } = useGameState();
+export default function PortraitHUD({ selectedProvince, onAction, SYMBOL_ICONS, heraldStats: computedHeraldStats, traits }: PortraitHUDProps) {
 
   const statConfig = [
     { key: 'authority', icon: Shield, color: 'text-amber-400', label: 'AUTHORITY', glow: 'shadow-[0_0_15px_rgba(251,191,36,0.3)]' },

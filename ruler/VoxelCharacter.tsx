@@ -286,6 +286,7 @@ export default function VoxelCharacter({ provinceData, stats, traitIds }: VoxelC
       instancedMesh.setColorAt(i, finalColor);
     });
 
+    if (instancedMesh.instanceColor) instancedMesh.instanceColor.needsUpdate = true;
     scene.add(instancedMesh);
     instancedMeshRef.current = instancedMesh;
   }, [provinceData, stats, traitIds]);

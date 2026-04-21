@@ -1,15 +1,16 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Shield, Sword, User, Scroll, X, Sparkles, Skull, Trophy, Flame, Zap, Brain } from 'lucide-react';
-import { useGameState } from '@shared/useGameState';
+import { HeraldStats, Trait } from '../shared/types';
 
 interface ActionModalsProps {
   activeModal: 'character' | 'military' | 'council' | 'decisions' | null;
   closeModal: () => void;
   selectedProvinceName?: string;
+  heraldStats: HeraldStats;
+  traits: Trait[];
 }
 
-export default function ActionModals({ activeModal, closeModal }: ActionModalsProps) {
-  const { computedHeraldStats, traits } = useGameState();
+export default function ActionModals({ activeModal, closeModal, heraldStats: computedHeraldStats, traits }: ActionModalsProps) {
 
   if (!activeModal) return null;
 
