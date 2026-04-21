@@ -1,10 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=JetBrains+Mono:wght@400;500&family=Cinzel:wght@400;700;900&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
   --font-medieval: "Cinzel", serif;
+  --font-serif: "Crimson Text", serif;
 }
 
 html, body, #root {
@@ -34,4 +34,21 @@ html, body, #root {
 
 .radial-vignette {
   background: radial-gradient(circle, transparent 0%, #000000 100%);
+}
+
+/* Custom Utilities for CK3 aesthetic */
+.parchment-bg {
+  @apply bg-zinc-900 border border-amber-900/30 shadow-2xl;
+}
+
+.gold-text {
+  @apply text-amber-400;
+}
+
+.gothic-font {
+  font-family: var(--font-medieval);
+}
+
+.serif-font {
+  font-family: var(--font-serif);
 }
