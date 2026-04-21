@@ -1,4 +1,6 @@
-import { MapData, BaronyData } from '../map/types';
+import { MapData, BaronyData, Biome, MapMode, LODLevel } from '../map/types';
+
+export type { Biome, MapMode, LODLevel };
 
 export interface GameResources {
   gold: number;

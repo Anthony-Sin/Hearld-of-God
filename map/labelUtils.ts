@@ -54,7 +54,7 @@ export const createLabelMesh = (
     texture.anisotropy = 8;
     
     const areaScale = Math.sqrt(area) * 0.015; 
-    const levelBase = level === 'Empire' ? 1.4 : level === 'Kingdom' ? 1.0 : level === 'Duchy' ? 0.8 : level === 'County' ? 0.6 : 0.5;
+    const levelBase = level === 'Empire' ? 4.0 : level === 'Kingdom' ? 2.5 : level === 'Duchy' ? 1.5 : level === 'County' ? 0.8 : 0.6;
     const finalBaseScale = levelBase * areaScale;
 
     const planeGeo = new THREE.PlaneGeometry(canvas.width * 0.05, canvas.height * 0.05);
@@ -82,21 +82,34 @@ export const createLabelMesh = (
     return mesh;
 };
 
-export const updateLabelsCollision = (labelGroup: THREE.Group, level: ViewLevel) => {
+export const updateLabelsCollision = (labelGroup: THREE.Group, level: ViewLevel, camera: THREE.Camera, controls: any) => {
     const visibleNames: LabelMesh[] = [];
+    const dist = camera.position.distanceTo(controls.target);
+
     labelGroup.children.forEach(child => {
         const mesh = child as LabelMesh;
-        const targetVisible = mesh.userData.level === level;
         const mat = mesh.material as THREE.MeshBasicMaterial;
         
-        if (targetVisible) {
-            mat.opacity = THREE.MathUtils.lerp(mat.opacity, 1, 0.05);
+        // Custom fading logic based on camera distance and level
+        let targetOpacity = 0;
+        if (mesh.userData.level === 'Empire') {
+            targetOpacity = dist > 60 ? 1 : Math.max(0, (dist - 40) / 20);
+        } else if (mesh.userData.level === 'Kingdom') {
+            targetOpacity = dist > 40 && dist < 150 ? 1 : dist >= 150 ? Math.max(0, 1 - (dist - 150) / 30) : Math.max(0, (dist - 30) / 10);
+        } else if (mesh.userData.level === 'Duchy') {
+            targetOpacity = dist > 25 && dist < 100 ? 1 : dist >= 100 ? Math.max(0, 1 - (dist - 100) / 20) : Math.max(0, (dist - 20) / 5);
+        } else if (mesh.userData.level === 'County') {
+            targetOpacity = dist < 60 ? 1 : Math.max(0, 1 - (dist - 60) / 10);
+        }
+
+        mat.opacity = THREE.MathUtils.lerp(mat.opacity, targetOpacity, 0.1);
+        if (mat.opacity > 0.01) {
             mesh.visible = true;
             visibleNames.push(mesh);
         } else {
-            mat.opacity = THREE.MathUtils.lerp(mat.opacity, 0, 0.1);
-            if (mat.opacity < 0.05) mesh.visible = false;
+            mesh.visible = false;
         }
+
         mesh.scale.setScalar(mesh.userData.baseScale);
     });
 

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import * as THREE from 'three';
-import { MapData } from '../../lib/map/types';
+import { MapData } from './types';
 
 export function useVoxelPicking(
     camera: THREE.PerspectiveCamera | null,

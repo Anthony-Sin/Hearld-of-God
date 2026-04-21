@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { User, Shield, Zap, Globe } from 'lucide-react';
-import { BaronyData, MapData } from '../../lib/mapGenerator';
+import { BaronyData, MapData } from '@map/types';
 
 interface ProvinceDetailProps {
   selectedProvince: BaronyData | null;

@@ -60,9 +60,9 @@ export function useVoxelLabels(scene: THREE.Scene | null, mapData: MapData, view
     }, [scene, mapData]);
 
     // Visibility & Collision Update
-    const updateLabels = useCallback(() => {
+    const updateLabels = useCallback((camera: THREE.Camera, controls: any) => {
         if (!labelGroupRef.current) return;
-        updateLabelsCollision(labelGroupRef.current, viewLevel);
+        updateLabelsCollision(labelGroupRef.current, viewLevel, camera, controls);
     }, [viewLevel]);
 
     return { updateLabels, labelGroupRef };

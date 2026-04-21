@@ -1,8 +1,9 @@
-import { BaronyData, HierarchyEntity, MapHierarchy, TINTS } from './types';
+import { BaronyData, HierarchyEntity, MapHierarchy, TINTS, Biome } from './types';
 import { genName } from './naming';
 
 const CULTURES = ['Anglo-Saxon', 'Norse', 'Gaelic', 'Frankish', 'Occitan', 'Castilian', 'Lombard', 'Saxon', 'Greek'];
 const RELIGIONS = ['Catholic', 'Orthodox', 'Asatru', 'Insular', 'Ashari', 'Slavic Pagan'];
+const BIOMES: Biome[] = ['plains', 'forest', 'desert', 'tundra', 'mountain', 'wetlands'];
 
 /**
  * Modular builder for the map hierarchy. 
@@ -112,6 +113,7 @@ export class MapHierarchyBuilder {
             id: i, x: p.x, z: p.z, rotation: 0, area: 0,
             name: genName(this.random, 'Barony'),
             color: TINTS[i % TINTS.length],
+            biome: BIOMES[Math.floor(this.random() * BIOMES.length)],
             countyId, duchyId, kingdomId, empireId,
             culture: CULTURES[Math.floor(this.random() * CULTURES.length)],
             religion: RELIGIONS[Math.floor(this.random() * RELIGIONS.length)],

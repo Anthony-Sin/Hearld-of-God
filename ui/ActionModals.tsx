@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Shield, Sword, User, Scroll, X } from 'lucide-react';
-import { ActiveModal } from '../../hooks/useCharacterActions';
+import { ActiveModal } from '@shared/types';
 
 interface ActionModalsProps {
   activeModal: ActiveModal;

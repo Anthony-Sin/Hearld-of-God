@@ -1,5 +1,5 @@
 import { Coins, Star, Hash, Trophy, Users } from 'lucide-react';
-import { GameResources } from '../../hooks/useGameState';
+import { GameResources } from '@shared/types';
 
 interface TopBarProps {
   resources: GameResources;

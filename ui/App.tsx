@@ -27,6 +27,10 @@ export default function App() {
     selectedProvinceId,
     setSelectedProvinceId,
     selectedProvince,
+    mapMode,
+    setMapMode,
+    lodLevel,
+    setLodLevel,
     gameSpeed,
     setGameSpeed,
     currentDate,
@@ -35,8 +39,6 @@ export default function App() {
     openModal,
     closeModal,
   } = useGameState();
-
-  const [showRegions, setShowRegions] = useState(true);
 
   return (
     <div className="relative w-full h-screen bg-[#0f0f0f] font-sans text-[#e0e0e0] overflow-hidden">
@@ -51,8 +53,10 @@ export default function App() {
           if (id === selectedProvinceId) setSelectedProvinceId(null);
           else setSelectedProvinceId(id);
         }}
-        showRegions={showRegions}
         selectedProvinceId={selectedProvinceId}
+        mapMode={mapMode}
+        lodLevel={lodLevel}
+        setLodLevel={setLodLevel}
       />
 
       {/* Global Vignette */}
@@ -102,10 +106,22 @@ export default function App() {
                     {isGenerating ? 'Synthesizing...' : 'Regenerate'}
                   </button>
                   <button 
-                    onClick={() => setShowRegions(!showRegions)}
-                    className={`px-3 flex items-center justify-center border transition-all ${showRegions ? 'bg-sky-500/20 border-sky-500/50 text-sky-400' : 'bg-black/60 border-white/10 text-white/30'}`}
+                    onClick={() => setMapMode('political')}
+                    className={`px-3 py-1 border transition-all text-[9px] font-bold uppercase ${mapMode === 'political' ? 'bg-sky-500/20 border-sky-500/50 text-sky-400' : 'bg-black/60 border-white/10 text-white/30'}`}
                   >
-                    <MapIcon size={12} />
+                    Political
+                  </button>
+                  <button
+                    onClick={() => setMapMode('terrain')}
+                    className={`px-3 py-1 border transition-all text-[9px] font-bold uppercase ${mapMode === 'terrain' ? 'bg-green-500/20 border-green-500/50 text-green-400' : 'bg-black/60 border-white/10 text-white/30'}`}
+                  >
+                    Terrain
+                  </button>
+                  <button
+                    onClick={() => setMapMode('culture')}
+                    className={`px-3 py-1 border transition-all text-[9px] font-bold uppercase ${mapMode === 'culture' ? 'bg-purple-500/20 border-purple-500/50 text-purple-400' : 'bg-black/60 border-white/10 text-white/30'}`}
+                  >
+                    Culture
                   </button>
                 </div>
               </div>
