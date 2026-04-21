@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { BaronyData } from '../lib/mapGenerator.ts';
-import { rendererPool } from '../lib/threeSingleton';
+import { BaronyData } from '@map/mapGenerator.ts';
+import { rendererPool } from '@shared/threeSingleton';
 
 interface VoxelCharacterProps {
   provinceData: BaronyData | null;

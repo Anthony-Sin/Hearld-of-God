@@ -3,20 +3,19 @@ import { motion, AnimatePresence } from 'motion/react';
 import { RefreshCw, Map as MapIcon } from 'lucide-react';
 
 // Hooks
-import { useGameState } from './hooks/useGameState';
-import { useCharacterActions } from './hooks/useCharacterActions';
+import { useGameState } from '@shared/useGameState';
 
 // Components
-import VoxelMap from './components/VoxelMap';
-import TopBar from './components/hud/TopBar.tsx';
-import PortraitHUD from './components/hud/PortraitHUD.tsx';
-import ProvinceDetail from './components/hud/ProvinceDetail.tsx';
-import DateHUD from './components/hud/DateHUD.tsx';
-import StartMenu from './components/menu/StartMenu.tsx';
-import ActionModals from './components/hud/ActionModals.tsx';
+import VoxelMap from '@map/VoxelMap';
+import TopBar from './TopBar.tsx';
+import PortraitHUD from './PortraitHUD.tsx';
+import ProvinceDetail from './ProvinceDetail.tsx';
+import DateHUD from './DateHUD.tsx';
+import StartMenu from './StartMenu.tsx';
+import ActionModals from './ActionModals.tsx';
 
 // Constants
-import { MAP_WIDTH, MAP_DEPTH, SYMBOL_ICONS } from './constants';
+import { MAP_WIDTH, MAP_DEPTH, SYMBOL_ICONS } from '@shared/constants';
 
 export default function App() {
   const {
@@ -32,16 +31,12 @@ export default function App() {
     setGameSpeed,
     currentDate,
     playerResources,
+    activeModal,
+    openModal,
+    closeModal,
   } = useGameState();
 
-  const { activeModal, openModal, closeModal } = useCharacterActions();
-
   const [showRegions, setShowRegions] = useState(true);
-
-  const handleAction = (id: string) => {
-    console.log(`Action triggered: ${id}`);
-    // Future game logic here: popups for diplomacy, war, etc.
-  };
 
   return (
     <div className="relative w-full h-screen bg-[#0f0f0f] font-sans text-[#e0e0e0] overflow-hidden">

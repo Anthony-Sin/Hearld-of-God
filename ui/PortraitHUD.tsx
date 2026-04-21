@@ -1,6 +1,6 @@
-import { Heart, Star, Sparkles, Shield, Sword, User, Scroll, Crown } from 'lucide-react';
-import VoxelCharacter from '../VoxelCharacter';
-import { BaronyData } from '../../lib/mapGenerator';
+import { Heart, Star, Sparkles, Sword, User, Scroll, Crown } from 'lucide-react';
+import VoxelCharacter from '@ruler/VoxelCharacter';
+import { BaronyData } from '@map/mapGenerator';
 import { motion } from 'motion/react';
 
 interface PortraitHUDProps {
