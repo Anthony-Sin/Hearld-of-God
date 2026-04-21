@@ -3,25 +3,30 @@ import * as THREE from 'three';
 import { MapData } from './mapGenerator.ts';
 import { useCamera } from './useCamera.ts';
 import { rendererPool } from '@shared/threeSingleton';
-import { ViewLevel } from './types';
+import { ViewLevel, MapMode, LODLevel } from './types';
 
 // Modular Hooks
 import { useVoxelScene } from './useVoxelScene';
 import { useVoxelLabels } from './useVoxelLabels';
 import { useVoxelMeshes } from './useVoxelMeshes';
 import { useVoxelPicking } from './useVoxelPicking';
+import { useBorders } from './useBorders';
+import { useSelectionHighlight } from './useSelectionHighlight';
 
 interface VoxelMapProps {
   mapData: MapData;
   width: number;
   depth: number;
   onProvinceClick?: (provinceId: number) => void;
-  showRegions?: boolean;
   selectedProvinceId?: number | null;
+  mapMode: MapMode;
+  lodLevel: LODLevel;
+  setLodLevel: (level: LODLevel) => void;
 }
 
 export default function VoxelMap({ 
-    mapData, width, depth, onProvinceClick, showRegions = true, selectedProvinceId 
+    mapData, width, depth, onProvinceClick, selectedProvinceId,
+    mapMode, lodLevel, setLodLevel
 }: VoxelMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [domElement, setDomElement] = useState<HTMLElement | null>(null);
@@ -52,6 +57,8 @@ export default function VoxelMap({
   const { landInstRef, waterInstRef, updateColors } = useVoxelMeshes(mapData);
   useVoxelScene(sceneRef.current, mapData, landInstRef, waterInstRef, instanceToProvinceRef, viewLevel);
   const { updateLabels } = useVoxelLabels(sceneRef.current, mapData, viewLevel);
+  useBorders(sceneRef.current, mapData, lodLevel);
+  useSelectionHighlight(sceneRef.current, mapData, selectedProvinceId || null);
   const { handlePick } = useVoxelPicking(camera, landInstRef.current, mapData, (id) => {
       if (id !== null) onProvinceClick?.(id);
   });
@@ -77,15 +84,19 @@ export default function VoxelMap({
       // Zoom level detection
       const dist = camera.position.distanceTo(controls.target);
       let level: ViewLevel = 'Empire';
-      if (dist > 140) level = 'Empire';
-      else if (dist > 90) level = 'Kingdom';
-      else if (dist > 50) level = 'Duchy';
-      else level = 'County';
+      let lod: LODLevel = 'empire';
+
+      if (dist > 140) { level = 'Empire'; lod = 'empire'; }
+      else if (dist > 90) { level = 'Kingdom'; lod = 'empire'; }
+      else if (dist > 50) { level = 'Duchy'; lod = 'duchy'; }
+      else if (dist > 30) { level = 'County'; lod = 'county'; }
+      else { level = 'County'; lod = 'barony'; }
       
       setViewLevel(prev => (prev !== level ? level : prev));
+      if (lodLevel !== lod) setLodLevel(lod);
 
       // Label Collision & Visibility
-      updateLabels();
+      updateLabels(camera, controls);
 
       renderer.render(sceneRef.current!, camera);
     };
@@ -103,8 +114,8 @@ export default function VoxelMap({
 
   // Handle visual updates for regions
   useEffect(() => {
-    updateColors(viewLevel, showRegions);
-  }, [viewLevel, showRegions, updateColors]);
+    updateColors(mapMode, lodLevel);
+  }, [mapMode, lodLevel, updateColors]);
 
   return (
     <div ref={containerRef} className="w-full h-screen overflow-hidden bg-[#0a0a0f] relative">

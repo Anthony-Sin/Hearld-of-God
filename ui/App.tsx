@@ -27,6 +27,10 @@ export default function App() {
     selectedProvinceId,
     setSelectedProvinceId,
     selectedProvince,
+    mapMode,
+    setMapMode,
+    lodLevel,
+    setLodLevel,
     gameSpeed,
     setGameSpeed,
     currentDate,
@@ -46,8 +50,6 @@ export default function App() {
     investigate
   } = useGameState();
 
-  const [showRegions, setShowRegions] = useState(true);
-
   return (
     <div className="relative w-full h-screen bg-[#0f0f0f] font-sans text-[#e0e0e0] overflow-hidden">
       {!isStarted && <StartMenu onStart={startGame} />}
@@ -61,8 +63,10 @@ export default function App() {
           if (id === selectedProvinceId) setSelectedProvinceId(null);
           else setSelectedProvinceId(id);
         }}
-        showRegions={showRegions}
         selectedProvinceId={selectedProvinceId}
+        mapMode={mapMode}
+        lodLevel={lodLevel}
+        setLodLevel={setLodLevel}
       />
 
       {/* Global Vignette */}
@@ -113,6 +117,38 @@ export default function App() {
               traits={traits}
             />
 
+            {/* Combined Bottom Right Timeline & Map Mode Controls */}
+            <div className="absolute bottom-8 right-8 flex flex-col items-end gap-3 pointer-events-auto z-40">
+               {/* Map Mode Toggle (Consolidated here) */}
+              <div className="flex flex-col gap-0.5 scale-75 origin-bottom-right">
+                <span className="hud-label opacity-40 text-right">Cartography Mode</span>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={regenerate}
+                    disabled={isGenerating}
+                    className="border border-white/10 px-4 py-2 bg-black/60 backdrop-blur-sm hover:bg-white/10 text-[9px] tracking-[0.2em] uppercase font-bold transition-all disabled:opacity-30"
+                  >
+                    {isGenerating ? 'Synthesizing...' : 'Regenerate'}
+                  </button>
+                  <button 
+                    onClick={() => setMapMode('political')}
+                    className={`px-3 py-1 border transition-all text-[9px] font-bold uppercase ${mapMode === 'political' ? 'bg-sky-500/20 border-sky-500/50 text-sky-400' : 'bg-black/60 border-white/10 text-white/30'}`}
+                  >
+                    Political
+                  </button>
+                  <button
+                    onClick={() => setMapMode('terrain')}
+                    className={`px-3 py-1 border transition-all text-[9px] font-bold uppercase ${mapMode === 'terrain' ? 'bg-green-500/20 border-green-500/50 text-green-400' : 'bg-black/60 border-white/10 text-white/30'}`}
+                  >
+                    Terrain
+                  </button>
+                  <button
+                    onClick={() => setMapMode('culture')}
+                    className={`px-3 py-1 border transition-all text-[9px] font-bold uppercase ${mapMode === 'culture' ? 'bg-purple-500/20 border-purple-500/50 text-purple-400' : 'bg-black/60 border-white/10 text-white/30'}`}
+                  >
+                    Culture
+                  </button>
+                </div>
             {/* Bottom Right HUD (Game Speed & Map Modes) */}
             <div className={`absolute bottom-8 flex flex-col items-end gap-3 pointer-events-auto z-40 transition-all duration-500 ${selectedProvinceId ? 'right-[424px]' : 'right-8'}`}>
               <div className="flex gap-2 mb-2">

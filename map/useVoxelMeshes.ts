@@ -1,7 +1,23 @@
 import { useEffect, useRef, useCallback } from 'react';
 import * as THREE from 'three';
-import { MapData } from './types';
+import { MapData, MapMode, LODLevel } from './types';
 import { ViewLevel } from './types';
+
+function hashString(str: string) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    return Math.abs(hash);
+}
+
+function getCultureColor(culture: string) {
+    const hash = hashString(culture);
+    const hue = hash % 360;
+    return `hsl(${hue}, 60%, 50%)`;
+}
 
 const LAND_BASE_COLOR = new THREE.Color('#a1c181');
 const MOUNTAIN_COLOR = new THREE.Color('#8b8c89');
@@ -18,7 +34,7 @@ export function useVoxelMeshes(mapData: MapData) {
     const landInstRef = useRef<THREE.InstancedMesh | null>(null);
     const waterInstRef = useRef<THREE.InstancedMesh | null>(null);
 
-    const updateColors = useCallback((viewLevel: ViewLevel, showRegions: boolean) => {
+    const updateColors = useCallback((mapMode: MapMode, lodLevel: LODLevel) => {
         const landInst = landInstRef.current;
         if (!landInst) return;
 
@@ -26,34 +42,41 @@ export function useVoxelMeshes(mapData: MapData) {
         let landIdx = 0;
 
         mapData.voxels.forEach(v => {
-            if (v.type === 'water' || v.type === 'deep_water') return;
+            if (v.type === 'water' || v.type === 'deep_water' || v.height === 0) return;
 
-            // Base Terrain Color
-            let baseColor = LAND_BASE_COLOR;
-            if (v.type === 'mountain') baseColor = MOUNTAIN_COLOR;
-            if (v.type === 'hill') baseColor = HILL_COLOR;
-            if (v.type === 'river') baseColor = RIVER_COLOR;
-            if (v.type === 'forest') baseColor = FOREST_COLOR;
-            if (v.type === 'snow') baseColor = SNOW_COLOR;
-            if (v.type === 'sand') baseColor = SAND_COLOR;
-            if (v.type === 'swamp') baseColor = SWAMP_COLOR;
-            if (v.type === 'wasteland') baseColor = WASTELAND_COLOR;
-            if (v.type === 'tundra') baseColor = TUNDRA_COLOR;
-
-            // Region Overlay Color Logic
-            let regionColor: string | null = null;
-            const barony = mapData.baronies[v.provinceId];
-            if (showRegions && barony) {
-                if (viewLevel === 'Empire') regionColor = mapData.empires[barony.empireId]?.color;
-                else if (viewLevel === 'Kingdom') regionColor = mapData.kingdoms[barony.kingdomId]?.color;
-                else if (viewLevel === 'Duchy') regionColor = mapData.duchies[barony.duchyId]?.color;
-                else if (viewLevel === 'County') regionColor = mapData.counties[barony.countyId]?.color;
-            }
-
-            if (regionColor) {
-                tempColor.set(regionColor).lerp(baseColor, 0.3);
-            } else {
+            // 1. Determine Base Color based on Map Mode
+            if (mapMode === 'terrain') {
+                let baseColor = LAND_BASE_COLOR;
+                if (v.type === 'mountain') baseColor = MOUNTAIN_COLOR;
+                if (v.type === 'hill') baseColor = HILL_COLOR;
+                if (v.type === 'river') baseColor = RIVER_COLOR;
+                if (v.type === 'forest') baseColor = FOREST_COLOR;
+                if (v.type === 'snow') baseColor = SNOW_COLOR;
+                if (v.type === 'sand') baseColor = SAND_COLOR;
+                if (v.type === 'swamp') baseColor = SWAMP_COLOR;
+                if (v.type === 'wasteland') baseColor = WASTELAND_COLOR;
+                if (v.type === 'tundra') baseColor = TUNDRA_COLOR;
                 tempColor.copy(baseColor);
+            } else if (mapMode === 'political') {
+                const barony = mapData.baronies[v.provinceId];
+                if (barony) {
+                    let colorHex: string;
+                    if (lodLevel === 'empire') colorHex = mapData.empires[barony.empireId]?.color;
+                    else if (lodLevel === 'duchy') colorHex = mapData.duchies[barony.duchyId]?.color;
+                    else if (lodLevel === 'county') colorHex = mapData.counties[barony.countyId]?.color;
+                    else colorHex = barony.color;
+
+                    tempColor.set(colorHex);
+                } else {
+                    tempColor.set(LAND_BASE_COLOR);
+                }
+            } else if (mapMode === 'culture') {
+                const barony = mapData.baronies[v.provinceId];
+                if (barony) {
+                    tempColor.set(getCultureColor(barony.culture));
+                } else {
+                    tempColor.set(LAND_BASE_COLOR);
+                }
             }
 
             for (let h = 0; h < v.height; h++) {

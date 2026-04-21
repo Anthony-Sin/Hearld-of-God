@@ -1,4 +1,6 @@
 import { motion, AnimatePresence } from 'motion/react';
+import { User, Shield, Zap, Globe } from 'lucide-react';
+import { BaronyData, MapData } from '@map/types';
 import { Shield, Zap, Sword, Flame, Search, ChevronRight, X } from 'lucide-react';
 import { MapData } from '@map/types';
 import { ExtendedBaronyData } from '../shared/types';

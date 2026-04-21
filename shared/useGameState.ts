@@ -32,7 +32,11 @@ export function useGameState() {
     selectedProvince,
     isGenerating,
     setIsGenerating,
-    regenerateMap
+    regenerateMap,
+    mapMode,
+    setMapMode,
+    lodLevel,
+    setLodLevel
   } = useMapState(seed, MAP_WIDTH, MAP_DEPTH);
 
   const {
@@ -115,6 +119,10 @@ export function useGameState() {
     selectedProvinceId,
     setSelectedProvinceId,
     selectedProvince,
+    mapMode,
+    setMapMode,
+    lodLevel,
+    setLodLevel,
     gameSpeed,
     setGameSpeed,
     currentDate,

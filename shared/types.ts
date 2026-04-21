@@ -1,3 +1,6 @@
+import { MapData, BaronyData, Biome, MapMode, LODLevel } from '../map/types';
+
+export type { Biome, MapMode, LODLevel };
 import { MapData, BaronyData } from '../map/types';
 import type { HeraldStats, Trait } from '../ruler/state';
 

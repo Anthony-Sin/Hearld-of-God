@@ -1,5 +1,11 @@
 export type TerrainType = 'land' | 'water' | 'deep_water' | 'mountain' | 'hill' | 'plains' | 'river' | 'forest' | 'snow' | 'sand' | 'swamp' | 'wasteland' | 'tundra';
 
+export type Biome = 'plains' | 'forest' | 'desert' | 'tundra' | 'mountain' | 'wetlands';
+
+export type MapMode = 'political' | 'terrain' | 'culture';
+
+export type LODLevel = 'empire' | 'duchy' | 'county' | 'barony';
+
 export type ViewLevel = 'County' | 'Duchy' | 'Kingdom' | 'Empire';
 
 export interface VoxelData {
@@ -25,6 +31,7 @@ export interface BaronyData {
   id: number;
   name: string;
   color: string;
+  biome: Biome;
   culture: string;
   religion: string;
   development: number;

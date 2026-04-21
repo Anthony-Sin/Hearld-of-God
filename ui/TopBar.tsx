@@ -1,3 +1,5 @@
+import { Coins, Star, Hash, Trophy, Users } from 'lucide-react';
+import { GameResources } from '@shared/types';
 import { Coins, Star, Hash, Trophy, Settings, Users, Database } from 'lucide-react';
 import { motion } from 'motion/react';
 import { GameResources, DivineBalance, HeraldInfo } from '../shared/types';

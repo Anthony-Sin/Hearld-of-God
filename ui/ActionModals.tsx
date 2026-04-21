@@ -1,4 +1,6 @@
 import { motion, AnimatePresence } from 'motion/react';
+import { Shield, Sword, User, Scroll, X } from 'lucide-react';
+import { ActiveModal } from '@shared/types';
 import { Shield, Sword, User, Scroll, X, Settings } from 'lucide-react';
 import { ActiveModal } from '../shared/types';
 import { Shield, Sword, User, Scroll, X, Sparkles, Skull, Trophy, Flame, Zap, Brain } from 'lucide-react';

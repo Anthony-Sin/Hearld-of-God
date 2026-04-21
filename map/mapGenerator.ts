@@ -2,6 +2,7 @@ import { MapData, VoxelData, BaronyData, HierarchyEntity } from './types';
 import { generateTerrain } from './terrain';
 import { buildHierarchy } from './hierarchy';
 import { processTerritoryCenters } from './geometry';
+import { createNoise2D } from 'simplex-noise';
 
 function mulberry32(a: number) {
   return function() {
@@ -34,6 +35,40 @@ export function generateMap(width: number, depth: number, seed: number): MapData
       });
       v.provinceId = nearestId;
       v.provinceColor = baronies[nearestId]?.color || '#ffffff';
+
+      // Update terrain height and type based on biome
+      const barony = baronies[nearestId];
+      if (barony) {
+        const nx = v.x / width;
+        const nz = v.z / depth;
+        const noise2D = createNoise2D(mulberry32(seed + 99)); // Use a specific offset for detail noise
+
+        if (barony.biome === 'mountain') {
+          v.height = 4 + Math.floor(Math.abs(noise2D(nx * 10, nz * 10)) * 4);
+          v.type = 'mountain';
+        } else if (barony.biome === 'plains') {
+          v.height = 1;
+          v.type = 'plains';
+        } else if (barony.biome === 'forest') {
+          v.height = 2;
+          v.type = 'forest';
+        } else if (barony.biome === 'desert') {
+          v.height = 1;
+          v.type = 'sand';
+        } else if (barony.biome === 'tundra') {
+          v.height = 1;
+          v.type = 'tundra';
+        } else if (barony.biome === 'wetlands') {
+          const detail = noise2D(nx * 15, nz * 15);
+          if (detail > 0.3) {
+            v.height = 0;
+            v.type = 'water';
+          } else {
+            v.height = 1;
+            v.type = 'swamp';
+          }
+        }
+      }
     }
   });
 
